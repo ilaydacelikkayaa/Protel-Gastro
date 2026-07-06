@@ -1,0 +1,263 @@
+//
+//  Protel-Gastro
+//
+//  Created by İlayda Çelikkaya on 6.07.2026.
+//
+
+import UIKit
+import SnapKit
+
+final class SalonViewController: UIViewController {
+    
+    private let viewModel = SalonViewModel()
+    
+    // MARK: - UI Components
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Salon Düzeni"
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 32, weight: .bold)
+        return label
+    }()
+    
+    private let timeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "11:59"
+        label.textColor = .themeOrange
+        label.font = .systemFont(ofSize: 24, weight: .bold)
+        return label
+    }()
+    private let doluCardView: UIView = {
+            let view = UIView()
+            view.backgroundColor = .themeCardBackground
+            view.layer.cornerRadius = 16
+            
+            let iconView = UIImageView(image: UIImage(systemName: "person.2.fill"))
+            iconView.tintColor = .themeOrange
+            
+            let countLabel = UILabel()
+            countLabel.textColor = .white
+            countLabel.font = .systemFont(ofSize: 20, weight: .bold)
+            countLabel.text = "0"
+            
+            let titleLabel = UILabel()
+            titleLabel.text = "Dolu"
+            titleLabel.textColor = .themeSecondaryText
+            titleLabel.font = .systemFont(ofSize: 12, weight: .medium)
+            
+            view.addSubview(iconView)
+            view.addSubview(countLabel)
+            view.addSubview(titleLabel)
+            
+            iconView.snp.makeConstraints { make in
+                make.leading.equalToSuperview().offset(12)
+                make.centerY.equalToSuperview()
+                make.width.height.equalTo(24)
+            }
+            countLabel.snp.makeConstraints { make in
+                make.leading.equalTo(iconView.snp.trailing).offset(12)
+                make.top.equalToSuperview().offset(12)
+            }
+            titleLabel.snp.makeConstraints { make in
+                make.leading.equalTo(countLabel.snp.leading)
+                make.top.equalTo(countLabel.snp.bottom).offset(2)
+            }
+            return view
+        }()
+        
+        private let bosCardView: UIView = {
+            let view = UIView()
+            view.backgroundColor = .themeCardBackground
+            view.layer.cornerRadius = 16
+            
+            let iconView = UIImageView(image: UIImage(systemName: "fork.knife"))
+            iconView.tintColor = .systemGreen
+            
+            let countLabel = UILabel()
+            countLabel.textColor = .white
+            countLabel.font = .systemFont(ofSize: 20, weight: .bold)
+            countLabel.text = "0"
+            
+            let titleLabel = UILabel()
+            titleLabel.text = "Boş"
+            titleLabel.textColor = .themeSecondaryText
+            titleLabel.font = .systemFont(ofSize: 12, weight: .medium)
+            
+            view.addSubview(iconView)
+            view.addSubview(countLabel)
+            view.addSubview(titleLabel)
+            
+            iconView.snp.makeConstraints { make in
+                make.leading.equalToSuperview().offset(12)
+                make.centerY.equalToSuperview()
+                make.width.height.equalTo(24)
+            }
+            countLabel.snp.makeConstraints { make in
+                make.leading.equalTo(iconView.snp.trailing).offset(12)
+                make.top.equalToSuperview().offset(12)
+            }
+            titleLabel.snp.makeConstraints { make in
+                make.leading.equalTo(countLabel.snp.leading)
+                make.top.equalTo(countLabel.snp.bottom).offset(2)
+            }
+            return view
+        }()
+        
+        private let toplamSiparisCardView: UIView = {
+            let view = UIView()
+            view.backgroundColor = .themeCardBackground
+            view.layer.cornerRadius = 16
+            
+            let iconView = UIImageView(image: UIImage(systemName: "ticket.fill"))
+            iconView.tintColor = .systemBlue
+            
+            let countLabel = UILabel()
+            countLabel.textColor = .white
+            countLabel.font = .systemFont(ofSize: 20, weight: .bold)
+            countLabel.text = "0"
+            
+            let titleLabel = UILabel()
+            titleLabel.text = "Sipariş"
+            titleLabel.textColor = .themeSecondaryText
+            titleLabel.font = .systemFont(ofSize: 12, weight: .medium)
+            
+            view.addSubview(iconView)
+            view.addSubview(countLabel)
+            view.addSubview(titleLabel)
+            
+            iconView.snp.makeConstraints { make in
+                make.leading.equalToSuperview().offset(12)
+                make.centerY.equalToSuperview()
+                make.width.height.equalTo(24)
+            }
+            countLabel.snp.makeConstraints { make in
+                make.leading.equalTo(iconView.snp.trailing).offset(12)
+                make.top.equalToSuperview().offset(12)
+            }
+            titleLabel.snp.makeConstraints { make in
+                make.leading.equalTo(countLabel.snp.leading)
+                make.top.equalTo(countLabel.snp.bottom).offset(2)
+            }
+            return view
+        }()
+        
+        private lazy var cardsStackView: UIStackView = {
+            let stack = UIStackView(arrangedSubviews: [doluCardView, bosCardView, toplamSiparisCardView])
+            stack.axis = .horizontal
+            stack.distribution = .fillEqually
+            stack.spacing = 12
+            return stack
+        }()
+    
+    private lazy var collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumLineSpacing = 16
+        layout.minimumInteritemSpacing = 16
+        
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = .clear
+        cv.showsVerticalScrollIndicator = false
+        return cv
+    }()
+    
+    // MARK: - Lifecycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        setupCollectionView()
+        updateUpperCards()
+    }
+    
+    // MARK: - UI Setup
+    private func setupUI() {
+        view.backgroundColor = .themeBackground
+        navigationController?.isNavigationBarHidden = true
+        
+        view.addSubview(titleLabel)
+        view.addSubview(timeLabel)
+        view.addSubview(cardsStackView)
+        view.addSubview(collectionView)
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(24)
+            make.leading.equalToSuperview().offset(20)
+        }
+        
+        timeLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(titleLabel.snp.centerY)
+            make.trailing.equalToSuperview().offset(-20)
+        }
+        cardsStackView.snp.makeConstraints { make in
+                    make.top.equalTo(titleLabel.snp.bottom).offset(20)
+                    make.leading.equalToSuperview().offset(20)
+                    make.trailing.equalToSuperview().offset(-20)
+                    make.height.equalTo(64)
+                }
+                
+                collectionView.snp.makeConstraints { make in
+                    make.top.equalTo(cardsStackView.snp.bottom).offset(24)
+                    make.leading.equalToSuperview().offset(20)
+                    make.trailing.equalToSuperview().offset(-20)
+                    make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+                }
+        
+        collectionView.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(32)
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(-20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        }
+    }
+    private func setupCollectionView() {
+        collectionView.register(MasaCell.self, forCellWithReuseIdentifier: MasaCell.identifier)
+        
+        collectionView.dataSource = self
+        collectionView.delegate = self
+    }
+    private func updateUpperCards() {
+            if let countLabel = doluCardView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text != "Dolu" }) {
+                countLabel.text = viewModel.fullTableCountString.components(separatedBy: " ").first
+            }
+            
+            if let countLabel = bosCardView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text != "Boş" })
+        {
+                countLabel.text = viewModel.emptyTableCountString.components(separatedBy: " ").first
+            }
+            
+        if let countLabel = toplamSiparisCardView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text != "Sipariş" }) {
+                    countLabel.text = viewModel.totalOrderCountString
+                }
+        }
+}
+// MARK: - UICollectionView DataSource & Delegate
+extension SalonViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return viewModel.tables.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MasaCell.identifier, for: indexPath) as? MasaCell else {
+            return UICollectionViewCell()
+        }
+        
+        let masa = viewModel.tables[indexPath.item]
+        cell.configure(with: masa)
+        
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = (collectionView.frame.width - 32) / 3
+        return CGSize(width: width, height: width * 1.25)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let secilenMasa = viewModel.tables[indexPath.item]
+        
+        print("Garson \(secilenMasa.id) numaralı masaya tıkladı! Adisyona yönlendiriliyor...")
+        
+
+    }
+    
+}

@@ -62,9 +62,8 @@ class MenuViewController: UIViewController {
         urunCollectionView.dataSource = self
         urunCollectionView.delegate = self
         
-        urunCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "GeciciCell")
-
-        kategoriCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "GeciciCell")
+        kategoriCollectionView.register(KategoriCell.self, forCellWithReuseIdentifier: KategoriCell.reuseIdentifier)
+        urunCollectionView.register(YemekCell.self, forCellWithReuseIdentifier: YemekCell.reuseIdentifier)
     }
     private func setupBindings() {
             viewModel.onDataUpdated = { [weak self] in
@@ -77,6 +76,10 @@ class MenuViewController: UIViewController {
                     self.urunCollectionView.reloadData()
                 }
             }
+        if !self.viewModel.categories.isEmpty {
+            let defaultIndexPath = IndexPath(item: 0, section: 0)
+            self.kategoriCollectionView.selectItem(at: defaultIndexPath, animated: false, scrollPosition: .left)
+        }
         }
 }
 extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -93,30 +96,23 @@ extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelega
     }
     
 
-    func collectionView(_ collectionView: UICollectionView,
-                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "GeciciCell", for: indexPath)
-
-        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-
-        let label = UILabel(frame: cell.contentView.bounds)
-        label.textAlignment = .center
-        label.numberOfLines = 2
-        label.font = .systemFont(ofSize: 12)
-
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
         if collectionView == kategoriCollectionView {
-            cell.backgroundColor = .systemOrange
-            label.text = viewModel.categories[indexPath.item]
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: KategoriCell.reuseIdentifier, for: indexPath) as? KategoriCell else {
+                return UICollectionViewCell()
+            }
+            let kategoriIsmi = viewModel.categories[indexPath.item]
+            cell.configure(with: kategoriIsmi)
+            return cell
         } else {
-            cell.backgroundColor = .darkGray
-            label.text = viewModel.filteredItems[indexPath.item].name
-            label.textColor = .white
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: YemekCell.reuseIdentifier, for: indexPath) as? YemekCell else {
+                return UICollectionViewCell()
+            }
+            let yemekModeli = viewModel.item(at: indexPath.item)
+            cell.configure(with: yemekModeli)
+            return cell
         }
-
-        cell.contentView.addSubview(label)
-
-        return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

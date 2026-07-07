@@ -216,13 +216,7 @@ final class SalonViewController: UIViewController {
                     make.trailing.equalToSuperview().offset(-20)
                     make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
                 }
-        
-        collectionView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(32)
-            make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-        }
+  
     }
     private func setupCollectionView() {
         collectionView.register(MasaCell.self, forCellWithReuseIdentifier: MasaCell.identifier)

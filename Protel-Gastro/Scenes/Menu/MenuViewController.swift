@@ -9,7 +9,8 @@ import SnapKit
 import UIKit
 
 class MenuViewController: UIViewController {
- 
+    private let viewModel = MenuViewModel()
+    
     private let kategoriCollectionView:UICollectionView={
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -33,7 +34,10 @@ class MenuViewController: UIViewController {
     
     override func viewDidLoad() {
         view.backgroundColor = .themeBackground
+        
+        setupBindings()
         setUp()
+        viewModel.fetchMenuData()
         
     }
     private func setUp() {
@@ -57,20 +61,70 @@ class MenuViewController: UIViewController {
 
         urunCollectionView.dataSource = self
         urunCollectionView.delegate = self
-    }
+        
+        urunCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "GeciciCell")
 
+        kategoriCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "GeciciCell")
+    }
+    private func setupBindings() {
+            viewModel.onDataUpdated = { [weak self] in
+               
+
+                guard let self = self else { return }
+                
+                DispatchQueue.main.async {
+                    self.kategoriCollectionView.reloadData()
+                    self.urunCollectionView.reloadData()
+                }
+            }
+        }
 }
 extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == kategoriCollectionView {
-            return 5
-        } else {
-            return 10
-        }
-    }
+    func collectionView(_ collectionView: UICollectionView,
+                        numberOfItemsInSection section: Int) -> Int {
 
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if collectionView == kategoriCollectionView {
+            print("Kategori:", viewModel.categories.count)
+            return viewModel.categories.count
+        }
+
+        print("Ürün:", viewModel.filteredItems.count)
+        return viewModel.filteredItems.count
+    }
+    
+
+    func collectionView(_ collectionView: UICollectionView,
+                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "GeciciCell", for: indexPath)
+
+        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+
+        let label = UILabel(frame: cell.contentView.bounds)
+        label.textAlignment = .center
+        label.numberOfLines = 2
+        label.font = .systemFont(ofSize: 12)
+
+        if collectionView == kategoriCollectionView {
+            cell.backgroundColor = .systemOrange
+            label.text = viewModel.categories[indexPath.item]
+        } else {
+            cell.backgroundColor = .darkGray
+            label.text = viewModel.filteredItems[indexPath.item].name
+            label.textColor = .white
+        }
+
+        cell.contentView.addSubview(label)
+
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        if collectionView ==  kategoriCollectionView{
+            return CGSize(width: 100, height: 40)
+        }
+        else{
+            return CGSize(width: collectionView.frame.width - 32, height: 120)
+        }
     }
 }

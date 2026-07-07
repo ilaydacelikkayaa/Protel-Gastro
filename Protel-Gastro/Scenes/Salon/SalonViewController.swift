@@ -20,6 +20,14 @@ final class SalonViewController: UIViewController {
         return label
     }()
     
+    private let topSubtitleLabel:UILabel = {
+        let label = UILabel()
+        label.text="RESTORAN"
+        label.textColor = .gray
+        label.font = .systemFont(ofSize: 12,weight: .semibold)
+        return label
+    }()
+    
     private let timeLabel: UILabel = {
         let label = UILabel()
         label.text = "11:59"
@@ -173,13 +181,21 @@ final class SalonViewController: UIViewController {
         view.backgroundColor = .themeBackground
         navigationController?.isNavigationBarHidden = true
         
+        view.addSubview(topSubtitleLabel)
         view.addSubview(titleLabel)
         view.addSubview(timeLabel)
         view.addSubview(cardsStackView)
         view.addSubview(collectionView)
         
-        titleLabel.snp.makeConstraints { make in
+        topSubtitleLabel.snp.makeConstraints{
+            make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(24)
+            make.leading.equalToSuperview().offset(20)
+
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(topSubtitleLabel.snp.bottom).offset(4)
             make.leading.equalToSuperview().offset(20)
         }
         
@@ -214,6 +230,7 @@ final class SalonViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
     }
+    
     private func updateUpperCards() {
             if let countLabel = doluCardView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text != "Dolu" }) {
                 countLabel.text = viewModel.fullTableCountString.components(separatedBy: " ").first
@@ -255,8 +272,14 @@ extension SalonViewController: UICollectionViewDataSource, UICollectionViewDeleg
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let secilenMasa = viewModel.tables[indexPath.item]
         
-        print("Garson \(secilenMasa.id) numaralı masaya tıkladı! Adisyona yönlendiriliyor...")
-        
+        if secilenMasa.isFull {
+            let adisyonvc=AdisyonViewController()
+            navigationController?.pushViewController(adisyonvc, animated:true)
+        }
+        else{
+            let menuvc=MenuViewController()
+            navigationController?.pushViewController(menuvc, animated: true)
+        }
 
     }
     

@@ -79,7 +79,7 @@ final class MasaCell: UICollectionViewCell {
             
             layer.borderWidth = 1
             layer.borderColor = UIColor.clear.cgColor
-        addSubview(orangeDotView)
+            addSubview(orangeDotView)
             addSubview(stackView)
         orangeDotView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(12)

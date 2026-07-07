@@ -10,6 +10,20 @@ import SnapKit
 
 final class MasaCell: UICollectionViewCell {
     static let identifier = "MasaCell"
+    override var isHighlighted: Bool{
+        didSet{
+            if isHighlighted{
+                UIView.animate(withDuration: 0.1){
+                    self.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+                }
+            }
+            else{
+                UIView.animate(withDuration: 0.1) {
+                                self.transform = .identity
+                            }
+            }
+        }
+    }
     
     private let topLabel: UILabel = {
             let label = UILabel()
@@ -19,6 +33,14 @@ final class MasaCell: UICollectionViewCell {
             label.textAlignment = .center
             return label
         }()
+
+    private let orangeDotView: UIView = {
+        let dot = UIView()
+        dot.backgroundColor = .systemOrange
+        dot.layer.cornerRadius = 4
+        return dot
+    }()
+    
     let numberLabel: UILabel = {
             let label = UILabel()
             label.textColor = .white
@@ -53,14 +75,17 @@ final class MasaCell: UICollectionViewCell {
     
     private func setupCell() {
             backgroundColor = .themeCardBackground
-            layer.cornerRadius = 16 // Köşeleri biraz daha yumuşattık
+            layer.cornerRadius = 16
             
-            // Tasarımdaki o şık turuncu noktayı (Dolu masalar için) ileride eklemek üzere
-            // kartın kenarlık yapısını hazırlıyoruz
             layer.borderWidth = 1
             layer.borderColor = UIColor.clear.cgColor
-            
+        addSubview(orangeDotView)
             addSubview(stackView)
+        orangeDotView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(12)
+            make.trailing.equalToSuperview().offset(-12)
+            make.width.height.equalTo(8)
+        }
             stackView.snp.makeConstraints { make in
                 make.top.bottom.equalToSuperview().inset(16)
                 make.leading.trailing.equalToSuperview().inset(8)
@@ -77,6 +102,7 @@ final class MasaCell: UICollectionViewCell {
                 topLabel.textColor = .themeOrange
                 statusLabel.text = String(format: "%.0f ₺", masa.currentSubtotal)
                 statusLabel.textColor = .white
+                orangeDotView.isHidden = false
             } else {
                 backgroundColor = .themeCardBackground
                 layer.borderColor = UIColor.clear.cgColor
@@ -84,6 +110,7 @@ final class MasaCell: UICollectionViewCell {
                 topLabel.textColor = .themeSecondaryText
                 statusLabel.text = "Boş"
                 statusLabel.textColor = .themeSecondaryText
+                orangeDotView.isHidden=true
             }
         }
     }

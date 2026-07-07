@@ -7,7 +7,7 @@
 
 import Foundation
 
-// MARK: - API Ham Model (Network Model)
+// MARK: - API Model
 struct StoreProduct: Codable {
     let id: Int
     let title: String
@@ -23,7 +23,7 @@ struct Rating: Codable {
     let count: Int
 }
 
-// MARK: - Restoran UI Modeli (Domain Model)
+// MARK: - Restoran UI Modeli
 struct MenuItem: Identifiable {
     let id: String
     let name: String
@@ -36,7 +36,7 @@ struct MenuItem: Identifiable {
     let orderCountString: String
 }
 
-// MARK: - Veri Dönüştürücü (Mapper Extension)
+// MARK: - Veri Dönüştürücü
 extension StoreProduct {
     func toMenuItem() -> MenuItem {
         let maskedCategory: String

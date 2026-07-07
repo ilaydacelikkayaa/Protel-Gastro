@@ -5,17 +5,24 @@
 //  Created by İlayda Çelikkaya on 6.07.2026.
 //
 import Foundation
+
 final class OrderManager{
     
+    // MARK: - Properties
     static let shared = OrderManager()
+    var tables: [RestaurantTable] = []
+    private var tableCarts: [Int: [CartItem]] = [:]
     
+    var totalRevenue:Double{
+        return tables.reduce(0.0){ $0 + $1.currentSubtotal}
+    }
+    
+    // MARK: - Init
     private init() {
         setupInitialTables()
     }
     
-    var tables: [RestaurantTable] = []
-    private var tableCarts: [Int: [CardItem]] = [:]
-    
+    // MARK: - Methods
     private func setupInitialTables() {
         for i in 1...12 {
             tables.append(RestaurantTable(id: i))
@@ -26,11 +33,7 @@ final class OrderManager{
         tables[1].orderTime = "18:45"
     }
     
-    var totalRevenue:Double{
-        return tables.reduce(0.0){ $0 + $1.currentSubtotal}
-    }
-    
-    func getCard(for tableId:Int) -> [CardItem]{
+    func getCart(for tableId:Int) -> [CartItem]{
         return tableCarts[tableId] ?? []
     }
 }

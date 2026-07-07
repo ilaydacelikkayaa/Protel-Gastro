@@ -1,4 +1,5 @@
 //
+//  SalonViewController.swift
 //  Protel-Gastro
 //
 //  Created by İlayda Çelikkaya on 6.07.2026.
@@ -9,22 +10,23 @@ import SnapKit
 
 final class SalonViewController: UIViewController {
     
+    // MARK: - Properties
     private let viewModel = SalonViewModel()
     
     // MARK: - UI Components
+    private let topSubtitleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "RESTORAN"
+        label.textColor = .gray
+        label.font = .systemFont(ofSize: 12, weight: .semibold)
+        return label
+    }()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Salon Düzeni"
         label.textColor = .white
         label.font = .systemFont(ofSize: 32, weight: .bold)
-        return label
-    }()
-    
-    private let topSubtitleLabel:UILabel = {
-        let label = UILabel()
-        label.text="RESTORAN"
-        label.textColor = .gray
-        label.font = .systemFont(ofSize: 12,weight: .semibold)
         return label
     }()
     
@@ -35,133 +37,27 @@ final class SalonViewController: UIViewController {
         label.font = .systemFont(ofSize: 24, weight: .bold)
         return label
     }()
-    private let doluCardView: UIView = {
-            let view = UIView()
-            view.backgroundColor = .themeCardBackground
-            view.layer.cornerRadius = 16
-            
-            let iconView = UIImageView(image: UIImage(systemName: "person.2.fill"))
-            iconView.tintColor = .themeOrange
-            
-            let countLabel = UILabel()
-            countLabel.textColor = .white
-            countLabel.font = .systemFont(ofSize: 20, weight: .bold)
-            countLabel.text = "0"
-            
-            let titleLabel = UILabel()
-            titleLabel.text = "Dolu"
-            titleLabel.textColor = .themeSecondaryText
-            titleLabel.font = .systemFont(ofSize: 12, weight: .medium)
-            
-            view.addSubview(iconView)
-            view.addSubview(countLabel)
-            view.addSubview(titleLabel)
-            
-            iconView.snp.makeConstraints { make in
-                make.leading.equalToSuperview().offset(12)
-                make.centerY.equalToSuperview()
-                make.width.height.equalTo(24)
-            }
-            countLabel.snp.makeConstraints { make in
-                make.leading.equalTo(iconView.snp.trailing).offset(12)
-                make.top.equalToSuperview().offset(12)
-            }
-            titleLabel.snp.makeConstraints { make in
-                make.leading.equalTo(countLabel.snp.leading)
-                make.top.equalTo(countLabel.snp.bottom).offset(2)
-            }
-            return view
-        }()
-        
-        private let bosCardView: UIView = {
-            let view = UIView()
-            view.backgroundColor = .themeCardBackground
-            view.layer.cornerRadius = 16
-            
-            let iconView = UIImageView(image: UIImage(systemName: "fork.knife"))
-            iconView.tintColor = .systemGreen
-            
-            let countLabel = UILabel()
-            countLabel.textColor = .white
-            countLabel.font = .systemFont(ofSize: 20, weight: .bold)
-            countLabel.text = "0"
-            
-            let titleLabel = UILabel()
-            titleLabel.text = "Boş"
-            titleLabel.textColor = .themeSecondaryText
-            titleLabel.font = .systemFont(ofSize: 12, weight: .medium)
-            
-            view.addSubview(iconView)
-            view.addSubview(countLabel)
-            view.addSubview(titleLabel)
-            
-            iconView.snp.makeConstraints { make in
-                make.leading.equalToSuperview().offset(12)
-                make.centerY.equalToSuperview()
-                make.width.height.equalTo(24)
-            }
-            countLabel.snp.makeConstraints { make in
-                make.leading.equalTo(iconView.snp.trailing).offset(12)
-                make.top.equalToSuperview().offset(12)
-            }
-            titleLabel.snp.makeConstraints { make in
-                make.leading.equalTo(countLabel.snp.leading)
-                make.top.equalTo(countLabel.snp.bottom).offset(2)
-            }
-            return view
-        }()
-        
-        private let toplamSiparisCardView: UIView = {
-            let view = UIView()
-            view.backgroundColor = .themeCardBackground
-            view.layer.cornerRadius = 16
-            
-            let iconView = UIImageView(image: UIImage(systemName: "ticket.fill"))
-            iconView.tintColor = .systemBlue
-            
-            let countLabel = UILabel()
-            countLabel.textColor = .white
-            countLabel.font = .systemFont(ofSize: 20, weight: .bold)
-            countLabel.text = "0"
-            
-            let titleLabel = UILabel()
-            titleLabel.text = "Sipariş"
-            titleLabel.textColor = .themeSecondaryText
-            titleLabel.font = .systemFont(ofSize: 12, weight: .medium)
-            
-            view.addSubview(iconView)
-            view.addSubview(countLabel)
-            view.addSubview(titleLabel)
-            
-            iconView.snp.makeConstraints { make in
-                make.leading.equalToSuperview().offset(12)
-                make.centerY.equalToSuperview()
-                make.width.height.equalTo(24)
-            }
-            countLabel.snp.makeConstraints { make in
-                make.leading.equalTo(iconView.snp.trailing).offset(12)
-                make.top.equalToSuperview().offset(12)
-            }
-            titleLabel.snp.makeConstraints { make in
-                make.leading.equalTo(countLabel.snp.leading)
-                make.top.equalTo(countLabel.snp.bottom).offset(2)
-            }
-            return view
-        }()
-        
-        private lazy var cardsStackView: UIStackView = {
-            let stack = UIStackView(arrangedSubviews: [doluCardView, bosCardView, toplamSiparisCardView])
-            stack.axis = .horizontal
-            stack.distribution = .fillEqually
-            stack.spacing = 12
-            return stack
-        }()
+    
+    private let doluCountLabel = UILabel()
+    private let bosCountLabel = UILabel()
+    private let siparisCountLabel = UILabel()
+    
+    private lazy var doluCardView: UIView = createStatCard(icon: "person.2.fill", color: .themeOrange, title: "Dolu", countLabel: doluCountLabel)
+    private lazy var bosCardView: UIView = createStatCard(icon: "fork.knife", color: .systemGreen, title: "Boş", countLabel: bosCountLabel)
+    private lazy var toplamSiparisCardView: UIView = createStatCard(icon: "ticket.fill", color: .systemBlue, title: "Sipariş", countLabel: siparisCountLabel)
+    
+    private lazy var cardsStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [doluCardView, bosCardView, toplamSiparisCardView])
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
+        stack.spacing = 12
+        return stack
+    }()
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 16
         layout.minimumInteritemSpacing = 16
-        
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
         cv.showsVerticalScrollIndicator = false
@@ -187,11 +83,9 @@ final class SalonViewController: UIViewController {
         view.addSubview(cardsStackView)
         view.addSubview(collectionView)
         
-        topSubtitleLabel.snp.makeConstraints{
-            make in
+        topSubtitleLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(24)
             make.leading.equalToSuperview().offset(20)
-
         }
         
         titleLabel.snp.makeConstraints { make in
@@ -203,44 +97,71 @@ final class SalonViewController: UIViewController {
             make.centerY.equalTo(titleLabel.snp.centerY)
             make.trailing.equalToSuperview().offset(-20)
         }
+        
         cardsStackView.snp.makeConstraints { make in
-                    make.top.equalTo(titleLabel.snp.bottom).offset(20)
-                    make.leading.equalToSuperview().offset(20)
-                    make.trailing.equalToSuperview().offset(-20)
-                    make.height.equalTo(64)
-                }
-                
-                collectionView.snp.makeConstraints { make in
-                    make.top.equalTo(cardsStackView.snp.bottom).offset(24)
-                    make.leading.equalToSuperview().offset(20)
-                    make.trailing.equalToSuperview().offset(-20)
-                    make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-                }
-  
+            make.top.equalTo(titleLabel.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(64)
+        }
+        
+        collectionView.snp.makeConstraints { make in
+            make.top.equalTo(cardsStackView.snp.bottom).offset(24)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        }
     }
+    
     private func setupCollectionView() {
         collectionView.register(MasaCell.self, forCellWithReuseIdentifier: MasaCell.identifier)
-        
         collectionView.dataSource = self
         collectionView.delegate = self
     }
     
-    private func updateUpperCards() {
-            if let countLabel = doluCardView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text != "Dolu" }) {
-                countLabel.text = viewModel.fullTableCountString.components(separatedBy: " ").first
-            }
-            
-            if let countLabel = bosCardView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text != "Boş" })
-        {
-                countLabel.text = viewModel.emptyTableCountString.components(separatedBy: " ").first
-            }
-            
-        if let countLabel = toplamSiparisCardView.subviews.compactMap({ $0 as? UILabel }).first(where: { $0.text != "Sipariş" }) {
-                    countLabel.text = viewModel.totalOrderCountString
-                }
+    private func createStatCard(icon: String, color: UIColor, title: String, countLabel: UILabel) -> UIView {
+        let card = UIView()
+        card.backgroundColor = .themeCardBackground
+        card.layer.cornerRadius = 16
+        
+        let iconView = UIImageView(image: UIImage(systemName: icon))
+        iconView.tintColor = color
+        
+        countLabel.textColor = .white
+        countLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        countLabel.text = "0"
+        
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.textColor = .themeSecondaryText
+        titleLabel.font = .systemFont(ofSize: 12, weight: .medium)
+        
+        card.addSubview(iconView)
+        card.addSubview(countLabel)
+        card.addSubview(titleLabel)
+        
+        iconView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(12)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(24)
         }
+        countLabel.snp.makeConstraints { make in
+            make.leading.equalTo(iconView.snp.trailing).offset(12)
+            make.top.equalToSuperview().offset(12)
+        }
+        titleLabel.snp.makeConstraints { make in
+            make.leading.equalTo(countLabel.snp.leading)
+            make.top.equalTo(countLabel.snp.bottom).offset(2)
+        }
+        return card
+    }
+    
+    private func updateUpperCards() {
+        doluCountLabel.text = viewModel.fullTableCountString.components(separatedBy: " ").first
+        bosCountLabel.text = viewModel.emptyTableCountString.components(separatedBy: " ").first
+        siparisCountLabel.text = viewModel.totalOrderCountString
+    }
 }
-// MARK: - UICollectionView DataSource & Delegate
+
+// MARK: - UICollectionViewDataSource & DelegateFlowLayout
 extension SalonViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -251,10 +172,8 @@ extension SalonViewController: UICollectionViewDataSource, UICollectionViewDeleg
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MasaCell.identifier, for: indexPath) as? MasaCell else {
             return UICollectionViewCell()
         }
-        
         let masa = viewModel.tables[indexPath.item]
         cell.configure(with: masa)
-        
         return cell
     }
     
@@ -264,17 +183,14 @@ extension SalonViewController: UICollectionViewDataSource, UICollectionViewDeleg
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let secilenMasa = viewModel.tables[indexPath.item]
+        let selectedTable = viewModel.tables[indexPath.item]
         
-        if secilenMasa.isFull {
-            let adisyonvc=AdisyonViewController()
-            navigationController?.pushViewController(adisyonvc, animated:true)
+        if selectedTable.isFull {
+            let adisyonVC = AdisyonViewController()
+            navigationController?.pushViewController(adisyonVC, animated: true)
+        } else {
+            let menuVC = MenuViewController()
+            navigationController?.pushViewController(menuVC, animated: true)
         }
-        else{
-            let menuvc=MenuViewController()
-            navigationController?.pushViewController(menuvc, animated: true)
-        }
-
     }
-    
 }

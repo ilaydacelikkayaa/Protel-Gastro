@@ -1,12 +1,12 @@
 //
-//  CartItrm.swift
+//  CartItem.swift
 //  Protel-Gastro
 //
 //  Created by İlayda Çelikkaya on 6.07.2026.
 //
 import Foundation
 
-struct CardItem {
+struct CartItem {
     let menuItem: MenuItem
     var quantity: Int
     

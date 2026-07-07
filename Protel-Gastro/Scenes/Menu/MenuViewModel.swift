@@ -7,65 +7,68 @@
 
 import Foundation
 
-final class MenuViewModel{
+final class MenuViewModel {
     
-    var allMenuItems: [MenuItem] = []
-    var categories: [String] = []
-    var filteredItems: [MenuItem] = []
+    // MARK: - Properties
+    private(set) var allMenuItems: [MenuItem] = []
+    private(set) var categories: [String] = []
+    private(set) var filteredItems: [MenuItem] = []
+    private(set) var selectedCategory: String?
+    
+    // MARK: - Closures (Data Binding)
     var onDataUpdated: (() -> Void)?
     
- func fetchMenuData(){
-        
-        NetworkManager.shared.fetchProducts{ [weak self] result in
-            guard let self = self else {return}
-            switch result{
+    // MARK: - Networking
+    func fetchMenuData() {
+        NetworkManager.shared.fetchProducts { [weak self] result in
+            guard let self = self else { return }
+            switch result {
             case .success(let storeProducts):
-                print("API ürün sayısı:", storeProducts.count)
-
                 self.allMenuItems = storeProducts.map { $0.toMenuItem() }
-
-                print("MenuItem sayısı:", self.allMenuItems.count)
-                print("Kategoriler:", self.allMenuItems.map { $0.menuCategory })
-
+                
                 let uniqueCategories = Set(self.allMenuItems.map { $0.menuCategory })
                 self.categories = Array(uniqueCategories).sorted()
-
-                print("Kategori sayısı:", self.categories.count)
-
+                
                 self.filteredItems = self.allMenuItems
-
                 self.onDataUpdated?()
+                
             case .failure(let error):
                 print("Menü verisi çekilirken hata oluştu: \(error)")
             }
         }
     }
-
+    
+    // MARK: - Helper Methods
     func numberOfItems() -> Int {
         return filteredItems.count
     }
-
+    
     func item(at index: Int) -> MenuItem {
         return filteredItems[index]
     }
     
-    func filterMenu(by category:String?){
-        guard let category = category, !category.isEmpty else{
-            self.filteredItems = self.allMenuItems
-                    self.onDataUpdated?()
-                    return
+    // MARK: - Business Logic 
+    func filterMenu(by category: String?) {
+        self.selectedCategory = category 
+        
+        guard let category = category, !category.isEmpty else {
+            filteredItems = allMenuItems
+            onDataUpdated?()
+            return
         }
-        self.filteredItems = self.allMenuItems.filter { $0.menuCategory == category }
-        self.onDataUpdated?()
+        filteredItems = allMenuItems.filter { $0.menuCategory == category }
+        onDataUpdated?()
     }
+    
     func searchMenu(with text: String) {
         if text.isEmpty {
-            self.filteredItems = self.allMenuItems
+            filteredItems = allMenuItems
         } else {
-            self.filteredItems = self.allMenuItems.filter { item in
+            filteredItems = allMenuItems.filter { item in
                 item.name.localizedCaseInsensitiveContains(text)
             }
         }
-        self.onDataUpdated?()
+        onDataUpdated?()
     }
+    
 }

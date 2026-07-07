@@ -9,7 +9,8 @@
 import UIKit
 
 extension UIColor {
-    static let themeBackground = UIColor(red: 0.07, green: 0.07, blue: 0.08, alpha: 1.00) 
+    // MARK: - Theme Colors
+    static let themeBackground = UIColor(red: 0.07, green: 0.07, blue: 0.08, alpha: 1.00)
     
     static let themeCardBackground = UIColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.00)
     

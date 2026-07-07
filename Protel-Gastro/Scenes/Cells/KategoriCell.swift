@@ -5,8 +5,7 @@ final class KategoriCell: UICollectionViewCell {
 
     static let reuseIdentifier = "KategoriCell"
 
-    // MARK: UI
-
+    // MARK: - UI Components
     private let containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .themeCardBackground
@@ -26,7 +25,6 @@ final class KategoriCell: UICollectionViewCell {
     }()
 
     // MARK: Selection
-
     override var isSelected: Bool {
         didSet {
             UIView.animate(withDuration: 0.2) {
@@ -46,7 +44,6 @@ final class KategoriCell: UICollectionViewCell {
     }
 
     // MARK: Init
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -82,7 +79,6 @@ final class KategoriCell: UICollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-
         transform = .identity
     }
 }

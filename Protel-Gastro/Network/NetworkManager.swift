@@ -1,5 +1,6 @@
 import Foundation
 
+// MARK: - Network Error Enum
 enum NetworkError: Error {
     case invalidURL
     case noData
@@ -7,12 +8,17 @@ enum NetworkError: Error {
     case serverError(Error)
 }
 
+// MARK: - Network Manager
 final class NetworkManager {
-    static let shared = NetworkManager()
-    private init() {}
     
+    // MARK: - Properties
+    static let shared = NetworkManager()
     private let baseURL = "https://fakestoreapi.com"
     
+    // MARK: - Init
+    private init() {}
+    
+    // MARK: - Public Methods
     func fetchProducts(completion: @escaping (Result<[StoreProduct], NetworkError>) -> Void) {
         guard let url = URL(string: "\(baseURL)/products") else {
             completion(.failure(.invalidURL))

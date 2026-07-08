@@ -50,7 +50,7 @@ class YemekCell: UICollectionViewCell {
         button.setImage(image, for:.normal)
         button.tintColor = .white
         button.backgroundColor = .themeOrange
-        button.layer.cornerRadius = 18 
+        button.layer.cornerRadius = 18
         return button
     }()
     
@@ -65,10 +65,10 @@ class YemekCell: UICollectionViewCell {
     }
     
     // MARK: - Lifecycle
-        override func prepareForReuse() {
-            super.prepareForReuse()
-            urunImageView.image = nil 
-        }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        urunImageView.image = nil
+    }
     // MARK: - Setup UI
     private func setupCell() {
         backgroundColor = .themeCardBackground
@@ -113,8 +113,14 @@ class YemekCell: UICollectionViewCell {
     // MARK: - Configure Data
     func configure(with item: MenuItem) {
         nameLabel.text = item.name
-        descriptionLabel.text = item.ingredients
-        priceLabel.text = item.priceString
+        
+        // 👑 Modelden bağımsız, saf verilerle UI tarafında açıklama oluşturuyoruz
+        descriptionLabel.text = "Puan: \(item.rating) | Bugün \(item.orderCount) kez sipariş edildi"
+        
+        // 👑 Saf Double olan fiyatı tam bu satırda formatlayıp ekrana basıyoruz
+        priceLabel.text = String(format: "%.2f ₺", item.price)
+        
+        // Resim yükleme kısmı aynen kalıyor, burası zaten doğruydu
         if let url = URL(string: item.imageUrl) {
             URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
                 if let data = data, let image = UIImage(data: data) {

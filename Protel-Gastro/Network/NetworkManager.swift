@@ -13,18 +13,20 @@ final class NetworkManager {
     
     // MARK: - Properties
     static let shared = NetworkManager()
-    private let baseURL = "https://fakestoreapi.com"
     
     // MARK: - Init
     private init() {}
     
     // MARK: - Public Methods
-    func fetchProducts(completion: @escaping (Result<[StoreProduct], NetworkError>) -> Void) {
-        guard let url = URL(string: "\(baseURL)/products") else {
+    //generic yapı
+    func fetch<T: Decodable>(
+        request: RestaurantRouter,
+        completion: @escaping (Result<T, NetworkError>) -> Void
+    ){
+        guard let url = request.url else {
             completion(.failure(.invalidURL))
             return
         }
-        
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 completion(.failure(.serverError(error)))
@@ -35,13 +37,14 @@ final class NetworkManager {
                 completion(.failure(.noData))
                 return
             }
-            
             do {
-                let products = try JSONDecoder().decode([StoreProduct].self, from: data)
-                completion(.success(products))
+                let decodedData = try JSONDecoder().decode(T.self, from: data)
+                completion(.success(decodedData))
             } catch {
                 completion(.failure(.decodingError))
             }
         }.resume()
     }
 }
+
+

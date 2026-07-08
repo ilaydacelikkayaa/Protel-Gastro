@@ -11,6 +11,6 @@ struct CartItem {
     var quantity: Int
     
     var totalItemPrice: Double {
-        return menuItem.priceDouble * Double(quantity)
+        return menuItem.price * Double(quantity)
     }
 }

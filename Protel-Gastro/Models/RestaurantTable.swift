@@ -13,5 +13,5 @@ struct RestaurantTable {
     var isFull: Bool = false
     var currentSubtotal: Double = 0.0
     var guestCount: Int = 0
-    var orderTime: String? 
+
 }

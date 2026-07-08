@@ -9,15 +9,14 @@ import Foundation
 
 final class SalonViewModel {
     
-
     var tables: [RestaurantTable] {
-        return OrderManager.shared.tables
+        return RestaurantStateManager.shared.tables
     }
     
-        var totalOrderCountString: String {
-            let activeOrders = tables.filter { $0.isFull }.count
-            return "\(activeOrders)"
-        }
+    var totalOrderCountString: String {
+        let activeOrders = tables.filter { $0.isFull }.count
+        return "\(activeOrders)"
+    }
     
     var fullTableCountString: String {
         let count = tables.filter { $0.isFull }.count

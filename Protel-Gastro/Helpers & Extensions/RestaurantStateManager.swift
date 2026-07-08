@@ -32,7 +32,7 @@ final class RestaurantStateManager {
         tables[1].isFull = true
         tables[1].currentSubtotal = 320.0
         tables[1].guestCount = 2
-        tables[1].orderTime = "18:45"
+       
     }
     
     func getCart(for tableId: Int) -> [CartItem] {

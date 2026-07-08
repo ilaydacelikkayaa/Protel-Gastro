@@ -20,21 +20,73 @@ final class MenuViewModel {
     
     // MARK: - Networking
     func fetchMenuData() {
-        NetworkManager.shared.fetchProducts { [weak self] result in
-            guard let self = self else { return }
+        let group = DispatchGroup()
+        var storeProducts: [StoreProduct] = []
+        var allDownloadedFoods: [FoodItem] = []
+        let categoriesToFetch = ["Dessert", "Beef", "Chicken", "Seafood", "Pasta"]
+        
+        group.enter()
+        NetworkManager.shared.fetch(request: .fetchProducts) { (result: Result<[StoreProduct], NetworkError>) in
             switch result {
-            case .success(let storeProducts):
-                self.allMenuItems = storeProducts.map { $0.toMenuItem() }
-                
-                let uniqueCategories = Set(self.allMenuItems.map { $0.menuCategory })
-                self.categories = Array(uniqueCategories).sorted()
-                
-                self.filteredItems = self.allMenuItems
-                self.onDataUpdated?()
-                
+            case .success(let products):
+                storeProducts = products
             case .failure(let error):
-                print("Menü verisi çekilirken hata oluştu: \(error)")
+                print("Fiyatlar çekilirken hata: \(error)")
             }
+            group.leave()
+        }
+        
+        for categoryName in categoriesToFetch {
+            group.enter()
+            NetworkManager.shared.fetch(request: .fetchMeals(category: categoryName)) { (result: Result<MealResponse, NetworkError>) in
+                switch result {
+                case .success(let response):
+                    let mappedMeals = response.meals.map { meal -> FoodItem in
+                        var updatedMeal = meal
+                        updatedMeal.category = categoryName
+                        return updatedMeal
+                    }
+                    allDownloadedFoods.append(contentsOf: mappedMeals)
+                    
+                case .failure(let error):
+                    print("\(categoryName) kategorisi çekilirken hata: \(error)")
+                }
+                group.leave()
+            }
+        }
+        
+        
+        group.notify(queue: .main) { [weak self] in
+            guard let self = self else { return }
+            
+            var combinedItems: [MenuItem] = []
+            
+            guard !storeProducts.isEmpty else { return }
+            
+            for i in 0..<allDownloadedFoods.count {
+                let food = allDownloadedFoods[i]
+                
+                let product = storeProducts[i % storeProducts.count]
+                
+                let item = MenuItem(
+                    id: "\(food.idMeal)-\(i)",
+                    name: food.strMeal,
+                    price: product.price,
+                    rating: product.rating.rate,
+                    category: food.category ?? "Diğer",
+                    imageUrl: food.strMealThumb,
+                    orderCount: product.rating.count
+                )
+                combinedItems.append(item)
+            }
+            
+            self.allMenuItems = combinedItems
+            
+            let uniqueCategories = Set(self.allMenuItems.map { $0.category })
+            self.categories = Array(uniqueCategories).sorted()
+            
+            self.filteredItems = self.allMenuItems
+            self.onDataUpdated?()
         }
     }
     
@@ -47,16 +99,20 @@ final class MenuViewModel {
         return filteredItems[index]
     }
     
-    // MARK: - Business Logic 
+    // MARK: - Business Logic
     func filterMenu(by category: String?) {
-        self.selectedCategory = category 
+        self.selectedCategory = category
         
         guard let category = category, !category.isEmpty else {
             filteredItems = allMenuItems
             onDataUpdated?()
             return
         }
-        filteredItems = allMenuItems.filter { $0.menuCategory == category }
+        
+        // Eski 'menuCategory' alanı yeni tertemiz 'category' ismine adapte edildi
+        filteredItems = allMenuItems.filter { item in
+            return item.category.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == category.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        }
         onDataUpdated?()
     }
     
@@ -70,5 +126,4 @@ final class MenuViewModel {
         }
         onDataUpdated?()
     }
-    
 }

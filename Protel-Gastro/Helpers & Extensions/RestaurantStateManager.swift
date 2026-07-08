@@ -6,14 +6,15 @@
 //
 import Foundation
 
-final class OrderManager{
+final class RestaurantStateManager {
     
     // MARK: - Properties
-    static let shared = OrderManager()
+    static let shared = RestaurantStateManager()
     var tables: [RestaurantTable] = []
     private var tableCarts: [Int: [CartItem]] = [:]
     
-    var totalRevenue:Double{
+    // TODO: - Yönetici paneli eklenebilir
+    var totalRevenue:Double {
         return tables.reduce(0.0){ $0 + $1.currentSubtotal}
     }
     
@@ -27,13 +28,14 @@ final class OrderManager{
         for i in 1...12 {
             tables.append(RestaurantTable(id: i))
         }
+
         tables[1].isFull = true
         tables[1].currentSubtotal = 320.0
         tables[1].guestCount = 2
         tables[1].orderTime = "18:45"
     }
     
-    func getCart(for tableId:Int) -> [CartItem]{
+    func getCart(for tableId: Int) -> [CartItem] {
         return tableCarts[tableId] ?? []
     }
 }

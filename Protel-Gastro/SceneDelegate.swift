@@ -17,10 +17,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
             
             let window = UIWindow(windowScene: windowScene)
+        let masaViewController = SalonViewController()
+        
             
-            let rootVC = SalonViewController()
-            
-            let navigationController = UINavigationController(rootViewController: rootVC)
+            let navigationController = UINavigationController(rootViewController: masaViewController)
             
             window.rootViewController = navigationController
             self.window = window

@@ -109,7 +109,6 @@ final class MenuViewModel {
             return
         }
         
-        // Eski 'menuCategory' alanı yeni tertemiz 'category' ismine adapte edildi
         filteredItems = allMenuItems.filter { item in
             return item.category.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == category.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         }

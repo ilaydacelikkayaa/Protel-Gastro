@@ -18,6 +18,7 @@ final class MenuViewController: UIViewController {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.minimumInteritemSpacing = 12
+        layout.estimatedItemSize = CGSize(width: 100, height: 50)
         let view = UICollectionView(frame: .zero, collectionViewLayout: layout)
         view.backgroundColor = .clear
         view.showsHorizontalScrollIndicator = false
@@ -42,6 +43,18 @@ final class MenuViewController: UIViewController {
         setupBindings()
         setupUI()
         viewModel.fetchMenuData()
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        
+        navigationController?.navigationBar.tintColor = .white
+    
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
     }
     
     // MARK: - Setup Methods
@@ -121,16 +134,26 @@ extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelega
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == kategoriCollectionView {
-            return CGSize(width: 100, height: 40)
+            return (collectionView.collectionViewLayout as? UICollectionViewFlowLayout)?.estimatedItemSize ?? CGSize(width: 100, height: 50)
         } else {
-            return CGSize(width: collectionView.frame.width - 32, height: 120)
-        }
+                return CGSize(width: collectionView.frame.width - 32, height: 120)
+            }
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == kategoriCollectionView {
             let selectedCategory = viewModel.categories[indexPath.item]
             viewModel.filterMenu(by: selectedCategory)
+        }
+        else{
+            let selectedProduct=viewModel.item(at:indexPath.item)
+            let detailVC = UrunDetayViewController(product:selectedProduct)
+            detailVC.modalPresentationStyle = .pageSheet
+            if let sheet = detailVC.sheetPresentationController {
+                    sheet.detents = [.medium(), .large()]
+                    sheet.prefersGrabberVisible = true
+                }
+            self.present(detailVC, animated: true, completion: nil)
         }
     }
 }

@@ -9,9 +9,9 @@ final class KategoriCell: UICollectionViewCell {
     private let containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .themeCardBackground
-        view.layer.cornerRadius = 24
         view.layer.borderWidth = 1
         view.layer.borderColor = UIColor.white.withAlphaComponent(0.08).cgColor
+        view.clipsToBounds = true
         return view
     }()
     
@@ -23,6 +23,10 @@ final class KategoriCell: UICollectionViewCell {
         label.numberOfLines = 1
         return label
     }()
+    override func layoutSubviews() {
+            super.layoutSubviews()
+            containerView.layer.cornerRadius = containerView.frame.height / 2
+        }
     
     // MARK: Selection
     override var isSelected: Bool {
@@ -61,13 +65,13 @@ final class KategoriCell: UICollectionViewCell {
         
         contentView.addSubview(containerView)
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.edges.equalTo(contentView)
         }
         
         containerView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(20)
-            make.top.bottom.equalToSuperview().inset(12)
+            make.centerY.equalToSuperview()
         }
     }
     
@@ -75,6 +79,7 @@ final class KategoriCell: UICollectionViewCell {
     
     func configure(with title: String) {
         titleLabel.text = title
+        self.layoutIfNeeded()
     }
     
     override func prepareForReuse() {

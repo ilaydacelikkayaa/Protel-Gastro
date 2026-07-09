@@ -71,11 +71,14 @@ final class SalonViewController: UIViewController {
         setupCollectionView()
         updateUpperCards()
     }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+    }
     
     // MARK: - UI Setup
     private func setupUI() {
         view.backgroundColor = .themeBackground
-        navigationController?.isNavigationBarHidden = true
         
         view.addSubview(topSubtitleLabel)
         view.addSubview(titleLabel)

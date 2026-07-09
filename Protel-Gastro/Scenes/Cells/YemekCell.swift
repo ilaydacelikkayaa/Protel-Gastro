@@ -114,13 +114,10 @@ class YemekCell: UICollectionViewCell {
     func configure(with item: MenuItem) {
         nameLabel.text = item.name
         
-        // 👑 Modelden bağımsız, saf verilerle UI tarafında açıklama oluşturuyoruz
         descriptionLabel.text = "Puan: \(item.rating) | Bugün \(item.orderCount) kez sipariş edildi"
         
-        // 👑 Saf Double olan fiyatı tam bu satırda formatlayıp ekrana basıyoruz
         priceLabel.text = String(format: "%.2f ₺", item.price)
         
-        // Resim yükleme kısmı aynen kalıyor, burası zaten doğruydu
         if let url = URL(string: item.imageUrl) {
             URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
                 if let data = data, let image = UIImage(data: data) {

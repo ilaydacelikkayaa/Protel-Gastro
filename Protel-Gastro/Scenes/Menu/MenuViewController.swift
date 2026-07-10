@@ -12,7 +12,17 @@ final class MenuViewController: UIViewController {
     
     // MARK: - Properties
     private let viewModel = MenuViewModel()
+    private let tableName: String
+    private let searchController = UISearchController(searchResultsController: nil)
+    private var urunCollectionViewBottomConstraint: Constraint?
+    init(tableName: String) {
+        self.tableName = tableName
+        super.init(nibName: nil, bundle: nil)
+    }
     
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     // MARK: - UI Components
     private let kategoriCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -23,6 +33,14 @@ final class MenuViewController: UIViewController {
         view.backgroundColor = .clear
         view.showsHorizontalScrollIndicator = false
         return view
+    }()
+    
+    private let basketBarView: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = .themeOrange
+        button.layer.cornerRadius = 16
+        button.isHidden = true
+        return button
     }()
     
     private let urunCollectionView: UICollectionView = {
@@ -39,19 +57,51 @@ final class MenuViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .themeBackground
-        
+        self.title = self.tableName
         setupBindings()
         setupUI()
         viewModel.fetchMenuData()
-    }
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: animated)
         
-        navigationController?.navigationBar.tintColor = .white
-    
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        print("Menu görünmeye başladı")
+        updateBasketBarStatus()
+    }
+
+    private func updateBasketBarStatus() {
+        let totalCount = CartManager.shared.getTotalCount()
+        let totalPrice = CartManager.shared.getTotalPrice()
+        
+        if totalCount > 0 {
+            basketBarView.isHidden = false
+            
+            var titleAttr = AttributedString("Sepeti Gör (\(totalCount) Ürün) — \(String(format: "%.2f ₺", totalPrice))")
+            titleAttr.font = .systemFont(ofSize: 16, weight: .bold)
+            basketBarView.configuration = .filled()
+            basketBarView.configuration?.baseForegroundColor = .white
+            basketBarView.configuration?.background.backgroundColor = .themeOrange
+            basketBarView.configuration?.attributedTitle = titleAttr
+            
+            urunCollectionViewBottomConstraint?.deactivate()
+            urunCollectionView.snp.makeConstraints { make in
+                self.urunCollectionViewBottomConstraint = make.bottom.equalTo(basketBarView.snp.top).offset(-8).constraint
+            }
+            
+        } else {
+            basketBarView.isHidden = true
+            
+            urunCollectionViewBottomConstraint?.deactivate()
+            urunCollectionView.snp.makeConstraints { make in
+                self.urunCollectionViewBottomConstraint = make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).constraint
+            }
+        }
+        
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
+    }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
@@ -61,16 +111,24 @@ final class MenuViewController: UIViewController {
     private func setupUI() {
         view.addSubview(kategoriCollectionView)
         view.addSubview(urunCollectionView)
-        
+        view.addSubview(basketBarView)
         kategoriCollectionView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(50)
         }
         
+        basketBarView.snp.makeConstraints { make in
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-16)
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.height.equalTo(56)
+        }
+
         urunCollectionView.snp.makeConstraints { make in
             make.top.equalTo(kategoriCollectionView.snp.bottom).offset(16)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.leading.trailing.equalToSuperview()
+            
+            self.urunCollectionViewBottomConstraint = make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).constraint
         }
         
         kategoriCollectionView.dataSource = self
@@ -80,7 +138,13 @@ final class MenuViewController: UIViewController {
         
         kategoriCollectionView.register(KategoriCell.self, forCellWithReuseIdentifier: KategoriCell.reuseIdentifier)
         urunCollectionView.register(YemekCell.self, forCellWithReuseIdentifier: YemekCell.reuseIdentifier)
+        basketBarView.addTarget(self, action: #selector(basketBarTapped), for: .touchUpInside)
     }
+    
+    @objc private func basketBarTapped() {
+        print("Sepet sayfasına dinamik olarak \(tableName) verisiyle gidiliyor...")
+    }
+ 
     
     private func setupBindings() {
         viewModel.onDataUpdated = { [weak self] in
@@ -95,13 +159,19 @@ final class MenuViewController: UIViewController {
                     let indexPath = IndexPath(item: index, section: 0)
                     self.kategoriCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
                 } else if !self.viewModel.categories.isEmpty {
-                    // Eğer hiçbir şey seçili değilse varsayılan olarak ilkini seç
                     let defaultIndexPath = IndexPath(item: 0, section: 0)
                     self.kategoriCollectionView.selectItem(at: defaultIndexPath, animated: false, scrollPosition: .left)
                 }
             }
         }
+        CartManager.shared.onCartUpdated = { [weak self] in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    self.updateBasketBarStatus()
+                }
+            }
     }
+    
 }
 
 // MARK: - UICollectionViewDataSource & DelegateFlowLayout
@@ -136,8 +206,8 @@ extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelega
         if collectionView == kategoriCollectionView {
             return (collectionView.collectionViewLayout as? UICollectionViewFlowLayout)?.estimatedItemSize ?? CGSize(width: 100, height: 50)
         } else {
-                return CGSize(width: collectionView.frame.width - 32, height: 120)
-            }
+            return CGSize(width: collectionView.frame.width - 32, height: 120)
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -146,14 +216,19 @@ extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelega
             viewModel.filterMenu(by: selectedCategory)
         }
         else{
-            let selectedProduct=viewModel.item(at:indexPath.item)
-            let detailVC = UrunDetayViewController(product:selectedProduct)
-            detailVC.modalPresentationStyle = .pageSheet
-            if let sheet = detailVC.sheetPresentationController {
-                    sheet.detents = [.medium(), .large()]
-                    sheet.prefersGrabberVisible = true
-                }
+            let selectedProduct = viewModel.item(at: indexPath.item)
+            let detailVC = UrunDetayViewController(product: selectedProduct)
+            
+            detailVC.modalPresentationStyle = .overFullScreen
+            
             self.present(detailVC, animated: true, completion: nil)
         }
+    }
+    
+}
+extension MenuViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let searchText = searchController.searchBar.text else { return }
+        viewModel.searchMenu(with: searchText)
     }
 }

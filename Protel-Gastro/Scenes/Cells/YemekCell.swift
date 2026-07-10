@@ -118,16 +118,19 @@ class YemekCell: UICollectionViewCell {
         
         priceLabel.text = String(format: "%.2f ₺", item.price)
         
-        if let url = URL(string: item.imageUrl) {
-            URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
-                if let data = data, let image = UIImage(data: data) {
+        NetworkManager.shared.downloadImage(from: item.imageUrl) { [weak self] result in
+            switch result {
+            case .success(let data):
+                if let image = UIImage(data: data) {
                     DispatchQueue.main.async {
                         self?.urunImageView.image = image
                     }
                 }
-            }.resume()
-        } else {
-            urunImageView.image = UIImage(systemName: "fork.knife")
+            case .failure:
+                DispatchQueue.main.async {
+                    self?.urunImageView.image = UIImage(systemName: "fork.knife")
+                }
+            }
         }
     }
 }

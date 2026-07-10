@@ -24,20 +24,32 @@ class UrunDetayViewController: UIViewController {
     }
     
     private let image: UIImageView = {
-       let imageView=UIImageView()
+        let imageView=UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
     }()
     
-    private let closeButton:UIButton = {
-        let button=UIButton()
-        let image = UIImage(systemName: "xmark.circle.fill")
-        button.setImage(image, for: .normal)
-        button.tintColor = .gray
-        return button
+    private let scrollView: UIScrollView = {
+        let scroll = UIScrollView()
+        scroll.showsVerticalScrollIndicator = false
+        scroll.alwaysBounceVertical = true
+        return scroll
     }()
     
+    private let contentView: UIView = {
+        let view = UIView()
+        return view
+    }()
+    
+    private let closeButton: UIButton = {
+        let button = UIButton(type: .system)
+        let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .bold)
+        let image = UIImage(systemName: "xmark.circle.fill", withConfiguration: config)
+        button.setImage(image, for: .normal)
+        button.tintColor = .white
+        return button
+    }()
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
@@ -156,20 +168,224 @@ class UrunDetayViewController: UIViewController {
     }()
     
     private let addToOrderButton: UIButton = {
-            var config = UIButton.Configuration.filled()
+        var config = UIButton.Configuration.filled()
         config.background.backgroundColor = .themeOrange
-            config.baseForegroundColor = .white
-            config.image = UIImage(systemName: "bag.fill")
-            config.imagePadding = 8
-            
-            let button = UIButton(configuration: config)
-            button.layer.cornerRadius = 16
-            button.clipsToBounds = true
-            return button
-        }()
+        config.baseForegroundColor = .white
+        config.image = UIImage(systemName: "bag.fill")
+        config.imagePadding = 8
+        
+        let button = UIButton(configuration: config)
+        button.layer.cornerRadius = 16
+        button.clipsToBounds = true
+        return button
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = .themeBackground
+        setupHierarchy()
+        setUpConstraints()
+        configureData()
+        fetchProductImage()
+        minusButton.addTarget(self, action: #selector(minusButtonTapped), for: .touchUpInside)
+        plusButton.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
+        closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
+        addToOrderButton.addTarget(self, action: #selector(addToOrderButtonTapped), for: .touchUpInside)
+        kitchenNote.delegate=self
+        
+    }
+    private func setupHierarchy() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        
+        contentView.addSubview(image)
+        contentView.addSubview(closeButton)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(priceLabel)
+        contentView.addSubview(salesCountLabel)
+        contentView.addSubview(badge)
+        contentView.addSubview(kitchenNoteTitleLabel)
+        contentView.addSubview(kitchenNote)
+        contentView.addSubview(stepperStackView)
+        
+        view.addSubview(addToOrderButton)
+        
+        kitchenNote.addSubview(kitchenNotePlaceholderLabel)
+        badge.addSubview(badgeStackView)
+        badgeStackView.addArrangedSubview(badgeIcon)
+        badgeStackView.addArrangedSubview(badgeLabel)
+        
+        stepperStackView.addArrangedSubview(minusButton)
+        stepperStackView.addArrangedSubview(countLabel)
+        stepperStackView.addArrangedSubview(plusButton)
+    }
+    
+    private func setUpConstraints() {
+        scrollView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(addToOrderButton.snp.top).offset(-16)
+        }
+        
+        contentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.equalTo(scrollView)
+        }
+        
+        image.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(350)
+        }
+        
+        closeButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
+            make.trailing.equalToSuperview().inset(16)
+            make.size.equalTo(44)
+        }
+        
+        badge.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
+            make.leading.equalToSuperview().inset(16)
+            make.height.equalTo(32)
+        }
+        
+        badgeStackView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8))
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(image.snp.bottom).offset(24)
+            make.leading.equalToSuperview().inset(20)
+            make.trailing.lessThanOrEqualTo(priceLabel.snp.leading).offset(-16)
+        }
+        
+        priceLabel.snp.makeConstraints { make in
+            make.top.equalTo(image.snp.bottom).offset(24)
+            make.trailing.equalToSuperview().inset(20)
+        }
+        priceLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        priceLabel.setContentHuggingPriority(.required, for: .horizontal)
+        
+        salesCountLabel.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(8)
+            make.leading.trailing.equalToSuperview().inset(20)
+        }
+        
+        kitchenNoteTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(salesCountLabel.snp.bottom).offset(28)
+            make.leading.trailing.equalToSuperview().inset(20)
+        }
+        
+        kitchenNote.snp.makeConstraints { make in
+            make.top.equalTo(kitchenNoteTitleLabel.snp.bottom).offset(8)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(120)
+        }
+        
+        kitchenNotePlaceholderLabel.snp.makeConstraints { make in
+            make.top.leading.equalToSuperview().inset(12)
+            make.trailing.equalToSuperview().inset(12)
+        }
+        
+        stepperStackView.snp.makeConstraints { make in
+            make.top.equalTo(kitchenNote.snp.bottom).offset(32)
+            make.centerX.equalToSuperview()
+            make.width.equalTo(200)
+            make.height.equalTo(48)
+            make.bottom.equalToSuperview().offset(-24)
+        }
+        
+        minusButton.snp.makeConstraints { make in
+            make.size.equalTo(48)
+        }
+        
+        plusButton.snp.makeConstraints { make in
+            make.size.equalTo(48)
+        }
+        
+        addToOrderButton.snp.makeConstraints { make in
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(16)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.height.equalTo(56)
+        }
+    }
+    
+    private func configureData() {
+        titleLabel.text = viewModel.productName
+        priceLabel.text = viewModel.productPriceText
+        salesCountLabel.text = viewModel.orderCountText
+        
+        badge.isHidden = !viewModel.isPopular
+        
+        updateBottomButtonPrice(count: 1)
+    }
+    
+    private func updateBottomButtonPrice(count: Int) {
+        let priceText = viewModel.calculateTotalPrice(for: count)
+        
+        var titleAttr = AttributedString("Adisyona Ekle — \(priceText)")
+        titleAttr.font = .systemFont(ofSize: 18, weight: .bold)
+        
+        addToOrderButton.configuration?.attributedTitle = titleAttr
+    }
+    @objc private func minusButtonTapped(){
+        if let currentText = countLabel.text,
+           let currentCount = Int(currentText){
+            if currentCount > 1{
+                let newCount = currentCount - 1
+                countLabel.text = "\(newCount)"
+                updateBottomButtonPrice(count: newCount)
+            }
+        }
+    }
+    
+    @objc private func plusButtonTapped(){
+        if let currentText = countLabel.text,
+           let currentCount = Int(currentText){
+            let newCount = currentCount + 1
+            countLabel.text = "\(newCount)"
+            updateBottomButtonPrice(count: newCount)
+        }
+    }
+    
+    @objc private func closeButtonTapped(){
+        dismiss(animated: true, completion: nil)
+    }
+    
+    @objc private func addToOrderButtonTapped() {
+        guard let countText = countLabel.text,
+              let quantity = Int(countText) else { return }
+
+        var finalNote: String?
+        if let noteText = kitchenNote.text, !noteText.isEmpty {
+            finalNote = noteText
+        }
+
+        CartManager.shared.addItem(
+            menuItem: product,
+            quantity: quantity,
+            kitchenNote: finalNote
+        )
+
+        // 2. Detay ekranı kapatılıyor
+        dismiss(animated: true, completion: nil)
+    }
+    
+    private func fetchProductImage() {
+        viewModel.fetchImageData { [weak self] imageData in
+            DispatchQueue.main.async {
+                if let data = imageData, let downloadedImage = UIImage(data: data) {
+                    self?.image.image = downloadedImage
+                } else {
+                    self?.image.image = UIImage(systemName: "fork.knife")
+                }
+            }
+        }
     }
 }
+extension UrunDetayViewController: UITextViewDelegate{
+    func textViewDidChange(_ textView: UITextView) {
+        kitchenNotePlaceholderLabel.isHidden = !textView.text.isEmpty
+    }
+}
+

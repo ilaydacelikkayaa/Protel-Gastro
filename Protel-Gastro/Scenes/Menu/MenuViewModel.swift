@@ -58,7 +58,6 @@ final class MenuViewModel {
         
         group.notify(queue: .main) { [weak self] in
             guard let self = self else { return }
-            
             var combinedItems: [MenuItem] = []
             
             guard !storeProducts.isEmpty else { return }
@@ -85,8 +84,7 @@ final class MenuViewModel {
             let uniqueCategories = Set(self.allMenuItems.map { $0.category })
             self.categories = Array(uniqueCategories).sorted()
             
-            self.filteredItems = self.allMenuItems
-            self.onDataUpdated?()
+            filterMenu(by: "Beef")
         }
     }
     

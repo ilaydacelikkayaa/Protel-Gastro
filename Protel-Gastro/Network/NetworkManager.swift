@@ -45,6 +45,28 @@ final class NetworkManager {
             }
         }.resume()
     }
-}
+    
+    // MARK: - Image Download Method
+    func downloadImage(from urlString: String, completion: @escaping (Result <Data, NetworkError>)-> Void){
+        guard let url = URL(string: urlString) else {
+                completion(.failure(.invalidURL))
+                return
+            }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    completion(.failure(.serverError(error)))
+                    return
+                }
+                
+                guard let data = data else {
+                    completion(.failure(.noData))
+                    return
+                }
+                
+                completion(.success(data))
+            }.resume()
+        }
+    }
+
 
 

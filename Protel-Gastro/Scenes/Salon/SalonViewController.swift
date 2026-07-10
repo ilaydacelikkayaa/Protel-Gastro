@@ -192,7 +192,7 @@ extension SalonViewController: UICollectionViewDataSource, UICollectionViewDeleg
             let adisyonVC = AdisyonViewController()
             navigationController?.pushViewController(adisyonVC, animated: true)
         } else {
-            let menuVC = MenuViewController()
+            let menuVC = MenuViewController(tableName: selectedTable.name)
             navigationController?.pushViewController(menuVC, animated: true)
         }
     }

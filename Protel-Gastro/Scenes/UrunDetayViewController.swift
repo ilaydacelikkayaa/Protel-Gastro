@@ -367,19 +367,13 @@ class UrunDetayViewController: UIViewController {
             kitchenNote: finalNote
         )
 
-        // 2. Detay ekranı kapatılıyor
         dismiss(animated: true, completion: nil)
     }
     
     private func fetchProductImage() {
-        viewModel.fetchImageData { [weak self] imageData in
-            DispatchQueue.main.async {
-                if let data = imageData, let downloadedImage = UIImage(data: data) {
-                    self?.image.image = downloadedImage
-                } else {
-                    self?.image.image = UIImage(systemName: "fork.knife")
-                }
-            }
+        viewModel.fetchImage{
+            [weak self] image in
+            self?.image.image=image
         }
     }
 }

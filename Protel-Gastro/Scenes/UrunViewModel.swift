@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 class UrunViewModel {
     
@@ -38,15 +39,11 @@ class UrunViewModel {
         let total = Double(count) * product.price
         return String(format: "%.2f ₺", total)
     }
-    func fetchImageData(completion: @escaping (Data?) -> Void) {
-        NetworkManager.shared.downloadImage(from: urlString) { result in
-            switch result {
-            case .success(let data):
-                completion(data)
-            case .failure(let error):
-                print("Görsel verisi indirilemedi: \(error)")
-                completion(nil)
-            }
+    
+    func fetchImage(completion: @escaping (UIImage?) ->Void) {
+  
+        ImageLoader.shared.loadImage(from: urlString){ image in
+            completion(image)
         }
     }
 }

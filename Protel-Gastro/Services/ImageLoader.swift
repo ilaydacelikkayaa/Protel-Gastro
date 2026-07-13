@@ -6,27 +6,40 @@
 //
 import UIKit
 
-final class ImageLoader{
+final class ImageLoader {
     
     static let shared = ImageLoader()
     
-    private init(){}
+    private init() {}
     
-    func loadImage(from urlString:String, completion:@escaping (UIImage?)->Void){
-        NetworkManager.shared.downloadImage(from: urlString) { result in
-            
+    private let cache = NSCache<NSString, UIImage>()
+    
+    func loadImage(from urlString: String, completion: @escaping (UIImage?) -> Void) {
+        let cacheKey = NSString(string: urlString)
+        
+        if let cachedImage = cache.object(forKey: cacheKey) {
+            completion(cachedImage)
+            return
+        }
+        
+        NetworkManager.shared.downloadImage(from: urlString) { [weak self] result in
             switch result {
                 
             case .success(let data):
+                guard let image = UIImage(data: data) else {
+                    DispatchQueue.main.async {
+                        completion(nil)
+                    }
+                    return
+                }
                 
-                let image = UIImage(data: data)
+                self?.cache.setObject(image, forKey: cacheKey)
                 
                 DispatchQueue.main.async {
                     completion(image)
                 }
                 
             case .failure:
-                
                 DispatchQueue.main.async {
                     completion(nil)
                 }

@@ -118,19 +118,9 @@ class YemekCell: UICollectionViewCell {
         
         priceLabel.text = String(format: "%.2f ₺", item.price)
         
-        NetworkManager.shared.downloadImage(from: item.imageUrl) { [weak self] result in
-            switch result {
-            case .success(let data):
-                if let image = UIImage(data: data) {
-                    DispatchQueue.main.async {
-                        self?.urunImageView.image = image
-                    }
-                }
-            case .failure:
-                DispatchQueue.main.async {
-                    self?.urunImageView.image = UIImage(systemName: "fork.knife")
-                }
-            }
+        ImageLoader.shared.loadImage(from: item.imageUrl) {
+            [weak self] image in
+            self?.urunImageView.image = image ?? UIImage(systemName: "fork.knife")
         }
     }
 }

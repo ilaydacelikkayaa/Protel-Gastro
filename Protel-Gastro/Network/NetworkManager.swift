@@ -1,3 +1,12 @@
+//
+//  NetworkManager.swift
+//  Protel-Gastro
+//
+//  Created by İlayda Çelikkaya on 8.07.2026.
+//
+
+
+
 import Foundation
 
 // MARK: - Network Error Enum

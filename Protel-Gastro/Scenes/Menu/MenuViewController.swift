@@ -12,11 +12,11 @@ final class MenuViewController: UIViewController {
     
     // MARK: - Properties
     private let viewModel = MenuViewModel()
-    private let tableName: String
-    private let searchController = UISearchController(searchResultsController: nil)
+    private let tableId: Int
     private var urunCollectionViewBottomConstraint: Constraint?
-    init(tableName: String) {
-        self.tableName = tableName
+    
+    init(tableId: Int) {
+        self.tableId = tableId
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -53,26 +53,50 @@ final class MenuViewController: UIViewController {
         return view
     }()
     
+    private let activityIndicator: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView(style: .large)
+        view.color = .themeOrange
+        view.hidesWhenStopped = true
+        return view
+    }()
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .themeBackground
-        self.title = self.tableName
+        self.title = "Masa \(tableId)"
+        
+        navigationController?.navigationBar.prefersLargeTitles = false
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.white,
+            .font: UIFont.systemFont(ofSize: 18, weight: .bold)
+        ]
+        
+        navigationController?.navigationBar.tintColor = .themeOrange
+        
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        
         setupBindings()
         setupUI()
+        activityIndicator.startAnimating()
         viewModel.fetchMenuData()
-        
     }
-
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("Menu görünmeye başladı")
+        navigationController?.setNavigationBarHidden(false, animated: animated)
         updateBasketBarStatus()
     }
-
+    
     private func updateBasketBarStatus() {
-        let totalCount = CartManager.shared.getTotalCount()
-        let totalPrice = CartManager.shared.getTotalPrice()
+        let totalCount = CartManager.shared.getTotalCount(tableId: self.tableId)
+        let totalPrice = CartManager.shared.getTotalPrice(tableId: self.tableId)
         
         if totalCount > 0 {
             basketBarView.isHidden = false
@@ -104,7 +128,7 @@ final class MenuViewController: UIViewController {
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: animated)
+        
     }
     
     // MARK: - Setup Methods
@@ -112,6 +136,7 @@ final class MenuViewController: UIViewController {
         view.addSubview(kategoriCollectionView)
         view.addSubview(urunCollectionView)
         view.addSubview(basketBarView)
+        view.addSubview(activityIndicator)
         kategoriCollectionView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
             make.leading.trailing.equalToSuperview().inset(16)
@@ -123,12 +148,16 @@ final class MenuViewController: UIViewController {
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(56)
         }
-
+        
         urunCollectionView.snp.makeConstraints { make in
             make.top.equalTo(kategoriCollectionView.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview()
             
             self.urunCollectionViewBottomConstraint = make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).constraint
+        }
+        activityIndicator.snp.makeConstraints{
+            make in
+            make.center.equalToSuperview()
         }
         
         kategoriCollectionView.dataSource = self
@@ -136,15 +165,16 @@ final class MenuViewController: UIViewController {
         urunCollectionView.dataSource = self
         urunCollectionView.delegate = self
         
-        kategoriCollectionView.register(KategoriCell.self, forCellWithReuseIdentifier: KategoriCell.reuseIdentifier)
-        urunCollectionView.register(YemekCell.self, forCellWithReuseIdentifier: YemekCell.reuseIdentifier)
+        kategoriCollectionView.register(CategoryCell.self, forCellWithReuseIdentifier: CategoryCell.reuseIdentifier)
+        urunCollectionView.register(FoodCell.self, forCellWithReuseIdentifier: FoodCell.reuseIdentifier)
         basketBarView.addTarget(self, action: #selector(basketBarTapped), for: .touchUpInside)
     }
     
     @objc private func basketBarTapped() {
-        print("Sepet sayfasına dinamik olarak \(tableName) verisiyle gidiliyor...")
+        let adisyonVC = NewCartViewController(tableId:self.tableId)
+        navigationController?.pushViewController(adisyonVC, animated: true)
     }
- 
+    
     
     private func setupBindings() {
         viewModel.onDataUpdated = { [weak self] in
@@ -153,6 +183,7 @@ final class MenuViewController: UIViewController {
             DispatchQueue.main.async {
                 self.kategoriCollectionView.reloadData()
                 self.urunCollectionView.reloadData()
+                self.activityIndicator.stopAnimating()
                 
                 if let selectedCategory = self.viewModel.selectedCategory,
                    let index = self.viewModel.categories.firstIndex(of: selectedCategory) {
@@ -165,11 +196,18 @@ final class MenuViewController: UIViewController {
             }
         }
         CartManager.shared.onCartUpdated = { [weak self] in
-                guard let self = self else { return }
-                DispatchQueue.main.async {
-                    self.updateBasketBarStatus()
-                }
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.updateBasketBarStatus()
             }
+        }
+        viewModel.onErrorOccurred = { [weak self] errorMessage in
+            guard let self = self else { return }
+            self.activityIndicator.stopAnimating()
+            let alert = UIAlertController(title: "Hata", message: errorMessage, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Tamam", style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
     }
     
 }
@@ -186,18 +224,30 @@ extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelega
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == kategoriCollectionView {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: KategoriCell.reuseIdentifier, for: indexPath) as? KategoriCell else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCell.reuseIdentifier, for: indexPath) as? CategoryCell else {
                 return UICollectionViewCell()
             }
             let categoryName = viewModel.categories[indexPath.item]
             cell.configure(with: categoryName)
             return cell
         } else {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: YemekCell.reuseIdentifier, for: indexPath) as? YemekCell else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FoodCell.reuseIdentifier, for: indexPath) as? FoodCell else {
                 return UICollectionViewCell()
             }
             let itemModel = viewModel.item(at: indexPath.item)
             cell.configure(with: itemModel)
+            
+            cell.didTapPlusButton = { [weak self] in
+                guard let self = self else { return }
+                
+                CartManager.shared.addItem(
+                    tableId: self.tableId,
+                    menuItem: itemModel,
+                    quantity: 1,
+                    kitchenNote: nil
+                )
+                self.updateBasketBarStatus()
+            }
             return cell
         }
     }
@@ -217,18 +267,11 @@ extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelega
         }
         else{
             let selectedProduct = viewModel.item(at: indexPath.item)
-            let detailVC = UrunDetayViewController(product: selectedProduct)
+            let detailVC = UrunDetayViewController(product: selectedProduct,tableId: self.tableId)
             
             detailVC.modalPresentationStyle = .overFullScreen
             
             self.present(detailVC, animated: true, completion: nil)
         }
-    }
-    
-}
-extension MenuViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let searchText = searchController.searchBar.text else { return }
-        viewModel.searchMenu(with: searchText)
     }
 }

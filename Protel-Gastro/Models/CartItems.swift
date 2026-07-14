@@ -4,9 +4,10 @@
 //
 //  Created by İlayda Çelikkaya on 6.07.2026.
 //
+
 import Foundation
 
-struct CartItem {
+struct CartItems {
     let menuItem: MenuItem
     var quantity: Int
     var kitchenNote: String?

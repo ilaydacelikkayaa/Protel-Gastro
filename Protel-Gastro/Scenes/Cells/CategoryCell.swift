@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-final class KategoriCell: UICollectionViewCell {
+final class CategoryCell: UICollectionViewCell {
     
     static let reuseIdentifier = "KategoriCell"
     

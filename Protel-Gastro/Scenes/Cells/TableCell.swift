@@ -1,5 +1,5 @@
 //
-//  MasaCell.swift
+//  TableCell.swift
 //  Protel-Gastro
 //
 //  Created by İlayda Çelikkaya on 6.07.2026.
@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-final class MasaCell: UICollectionViewCell {
+final class TableCell: UICollectionViewCell {
     
     static let identifier = "MasaCell"
     

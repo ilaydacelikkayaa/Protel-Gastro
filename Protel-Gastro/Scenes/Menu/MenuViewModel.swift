@@ -18,6 +18,8 @@ final class MenuViewModel {
     // MARK: - Closures (Data Binding)
     var onDataUpdated: (() -> Void)?
     
+    var onErrorOccurred: ((String) -> Void)?
+    
     // MARK: - Networking
     func fetchMenuData() {
         let group = DispatchGroup()
@@ -29,11 +31,19 @@ final class MenuViewModel {
         NetworkManager.shared.fetch(request: .fetchProducts) { (result: Result<[StoreProduct], NetworkError>) in
             switch result {
             case .success(let products):
-                storeProducts = products
+                DispatchQueue.main.async {
+                    storeProducts = products
+                    group.leave()
+                }
+              
             case .failure(let error):
                 print("Fiyatlar çekilirken hata: \(error)")
+                DispatchQueue.main.async {
+                    self.onErrorOccurred?("Menü yüklenirken bir hata oluştu. Lütfen internet bağlantınızı kontrol edin.")
+                }
+                group.leave()
             }
-            group.leave()
+           
         }
         
         for categoryName in categoriesToFetch {
@@ -46,15 +56,21 @@ final class MenuViewModel {
                         updatedMeal.category = categoryName
                         return updatedMeal
                     }
-                    allDownloadedFoods.append(contentsOf: mappedMeals)
+                    DispatchQueue.main.async {
+                        allDownloadedFoods.append(contentsOf: mappedMeals)
+                        group.leave() //Başarılı gruptan çık
+                    }
                     
                 case .failure(let error):
                     print("\(categoryName) kategorisi çekilirken hata: \(error)")
+                    DispatchQueue.main.async {
+                        self.onErrorOccurred?("Menü yüklenirken bir hata oluştu. Lütfen internet bağlantınızı kontrol edin.")
+                    }
+                    group.leave() // Başarısız: Doğrudan gruptan çık.
                 }
-                group.leave()
+               
             }
         }
-        
         
         group.notify(queue: .main) { [weak self] in
             guard let self = self else { return }
@@ -63,9 +79,11 @@ final class MenuViewModel {
             guard !storeProducts.isEmpty else { return }
             
             for i in 0..<allDownloadedFoods.count {
+              
                 let food = allDownloadedFoods[i]
-                
-                let product = storeProducts[i % storeProducts.count]
+                let mealId = Int(food.idMeal) ?? 0
+
+                let product = storeProducts[mealId % storeProducts.count]
                 
                 let item = MenuItem(
                     id: "\(food.idMeal)-\(i)",
@@ -84,7 +102,7 @@ final class MenuViewModel {
             let uniqueCategories = Set(self.allMenuItems.map { $0.category })
             self.categories = Array(uniqueCategories).sorted()
             
-            filterMenu(by: "Beef")
+            filterMenu(by: self.categories.first ?? "Beef")
         }
     }
     
@@ -112,17 +130,4 @@ final class MenuViewModel {
         }
         onDataUpdated?()
     }
-    
-    func searchMenu(with text: String) {
-        if text.isEmpty {
-            filteredItems = allMenuItems
-        } else {
-            filteredItems = allMenuItems.filter { item in
-                item.name.localizedCaseInsensitiveContains(text)
-            }
-        }
-        onDataUpdated?()
-    }
-   
-
 }

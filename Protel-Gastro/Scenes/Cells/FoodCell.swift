@@ -1,5 +1,5 @@
 //
-//  YemekCell.swift
+//  FoodCell.swift
 //  Protel-Gastro
 //
 //  Created by İlayda Çelikkaya on 7.07.2026.
@@ -8,9 +8,10 @@
 import UIKit
 import SnapKit
 
-class YemekCell: UICollectionViewCell {
+class FoodCell: UICollectionViewCell {
     static let reuseIdentifier = "yemek-cell"
     
+    var didTapPlusButton:(()->Void)?
     // MARK: - UI Components
     private let urunImageView: UIImageView = {
         let imageView = UIImageView()
@@ -90,6 +91,7 @@ class YemekCell: UICollectionViewCell {
             make.trailing.bottom.equalToSuperview().inset(12)
             make.width.height.equalTo(36)
         }
+        plusButton.addTarget(self, action: #selector(plusTapped), for: .touchUpInside)
         
         nameLabel.snp.makeConstraints { make in
             make.top.equalTo(urunImageView.snp.top)
@@ -122,5 +124,8 @@ class YemekCell: UICollectionViewCell {
             [weak self] image in
             self?.urunImageView.image = image ?? UIImage(systemName: "fork.knife")
         }
+    }
+    @objc private func plusTapped() {
+        didTapPlusButton?()
     }
 }

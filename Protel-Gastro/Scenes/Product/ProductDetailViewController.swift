@@ -1,5 +1,5 @@
 //
-//  UrunDetayViewController.swift
+//  ProductDetailViewController.swift
 //  Protel-Gastro
 //
 //  Created by İlayda Çelikkaya on 9.07.2026.
@@ -8,16 +8,16 @@
 import SnapKit
 import UIKit
 
-class UrunDetayViewController: UIViewController {
+class ProductDetailViewController: UIViewController {
     
     private let product: MenuItem
-    private let viewModel: UrunViewModel
+    private let viewModel: ProductViewModel
     private let tableId: Int
     
     init(product: MenuItem, tableId: Int) {
         self.product = product
         self.tableId = tableId
-        self.viewModel = UrunViewModel(product: product)
+        self.viewModel = ProductViewModel(product: product)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -423,7 +423,7 @@ class UrunDetayViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
     }
 }
-extension UrunDetayViewController: UITextViewDelegate{
+extension ProductDetailViewController: UITextViewDelegate{
     func textViewDidChange(_ textView: UITextView) {
         kitchenNotePlaceholderLabel.isHidden = !textView.text.isEmpty
     }

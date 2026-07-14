@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
             
             let window = UIWindow(windowScene: windowScene)
-        let masaViewController = SalonViewController()
+        let masaViewController = HallViewController()
         
             
             let navigationController = UINavigationController(rootViewController: masaViewController)

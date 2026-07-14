@@ -267,7 +267,7 @@ extension MenuViewController: UICollectionViewDataSource, UICollectionViewDelega
         }
         else{
             let selectedProduct = viewModel.item(at: indexPath.item)
-            let detailVC = UrunDetayViewController(product: selectedProduct,tableId: self.tableId)
+            let detailVC = ProductDetailViewController(product: selectedProduct,tableId: self.tableId)
             
             detailVC.modalPresentationStyle = .overFullScreen
             

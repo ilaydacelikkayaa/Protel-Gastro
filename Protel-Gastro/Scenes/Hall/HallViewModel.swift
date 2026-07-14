@@ -1,6 +1,6 @@
 import Foundation
 
-final class SalonViewModel {
+final class HallViewModel {
     
     var tables: [RestaurantTable] {
         return RestaurantStateManager.shared.tables

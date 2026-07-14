@@ -153,7 +153,7 @@ final class CartCell: UITableViewCell {
         priceLabel.text = String(format: "%.2f ₺ (%.2f x %d)", totalPrice, item.menuItem.price, item.quantity)
         productImageView.image = nil
         
-        let itemViewModel = UrunViewModel(product: item.menuItem)
+        let itemViewModel = ProductViewModel(product: item.menuItem)
         
         self.currentImageUrl=item.menuItem.imageUrl
         itemViewModel.fetchImage { [weak self] downloadedImage in

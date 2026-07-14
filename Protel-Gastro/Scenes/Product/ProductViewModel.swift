@@ -1,5 +1,5 @@
 //
-//  UrunViewModel.swift
+//  ProductViewModel.swift
 //  Protel-Gastro
 //
 //  Created by İlayda Çelikkaya on 9.07.2026.
@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class UrunViewModel {
+class ProductViewModel {
     
     private let product: MenuItem
     

@@ -1,5 +1,5 @@
 //
-//  SalonViewController.swift
+//  HallViewController.swift
 //  Protel-Gastro
 //
 //  Created by İlayda Çelikkaya on 6.07.2026.
@@ -8,10 +8,10 @@
 import UIKit
 import SnapKit
 
-final class SalonViewController: UIViewController {
+final class HallViewController: UIViewController {
     
     // MARK: - Properties
-    private let viewModel = SalonViewModel()
+    private let viewModel = HallViewModel()
     private var clockTimer: Timer?
     // MARK: - UI Components
     private let topSubtitleLabel: UILabel = {
@@ -180,7 +180,7 @@ final class SalonViewController: UIViewController {
 }
 
 // MARK: - UICollectionViewDataSource & DelegateFlowLayout
-extension SalonViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+extension HallViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return viewModel.tables.count

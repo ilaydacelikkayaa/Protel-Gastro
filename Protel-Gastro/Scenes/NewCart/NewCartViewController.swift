@@ -100,7 +100,7 @@ class NewCartViewController: UIViewController {
     }()
     
     // MARK: - Bottom Action Button
-    private let kitchenButon: UIButton = {
+    private let kitchenButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .themeOrange
         button.layer.cornerRadius = 16
@@ -129,7 +129,7 @@ class NewCartViewController: UIViewController {
         
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(AdisyonCell.self, forCellReuseIdentifier: AdisyonCell.identifier)
+        tableView.register(CartCell.self, forCellReuseIdentifier: CartCell.identifier)
     }
     
     // MARK: - UI Setup
@@ -138,7 +138,7 @@ class NewCartViewController: UIViewController {
         view.addSubview(subheaderLabel)
         view.addSubview(tableView)
         view.addSubview(summaryContainerView)
-        view.addSubview(kitchenButon)
+        view.addSubview(kitchenButton)
         
         summaryContainerView.addSubview(subtotalTitleLabel)
         summaryContainerView.addSubview(subtotalValueLabel)
@@ -159,15 +159,15 @@ class NewCartViewController: UIViewController {
             make.leading.equalTo(headerLabel.snp.leading)
         }
         
-        kitchenButon.snp.makeConstraints { make in
+        kitchenButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-20)
             make.leading.trailing.equalToSuperview().inset(20)
             make.height.equalTo(56)
         }
-        kitchenButon.addTarget(self, action: #selector(kitchenButtonTapped), for: .touchUpInside)
+        kitchenButton.addTarget(self, action: #selector(kitchenButtonTapped), for: .touchUpInside)
         
         summaryContainerView.snp.makeConstraints { make in
-            make.bottom.equalTo(kitchenButon.snp.top).offset(-24)
+            make.bottom.equalTo(kitchenButton.snp.top).offset(-24)
             make.leading.trailing.equalToSuperview().inset(20)
         }
         
@@ -215,29 +215,32 @@ class NewCartViewController: UIViewController {
             make.trailing.equalToSuperview().offset(-20)
         }
     }
-    private func configureSummaryCard(subtotal: Int, serviceFee: Int, total: Int) {
-        subtotalValueLabel.text = "\(subtotal) ₺"
-        serviceFeeValueLabel.text = "\(serviceFee) ₺"
-        totalValueLabel.text = "\(total) ₺"
+    private func configureSummaryCard(subtotal: Double, serviceFee: Double, total: Double) {
+        subtotalValueLabel.text = String(format: "%.2f ₺", subtotal)
+        serviceFeeValueLabel.text = String(format: "%.2f ₺", serviceFee)
+        totalValueLabel.text = String(format: "%.2f ₺", total)
     }
+    
     private func configureData() {
         headerLabel.text = "Masa \(viewModel.tableId) — Yeni Sepet"
         
         configureSummaryCard(
-            subtotal: Int(viewModel.subtotal),
-            serviceFee: Int(viewModel.servicefee),
-            total: Int(viewModel.total)
+            subtotal: viewModel.subtotal,
+            serviceFee: viewModel.serviceFee,
+            total: viewModel.total
         )
     }
     private func refreshScreen() {
         tableView.reloadData()
         configureData()
     }
+    
     @objc private func kitchenButtonTapped() {
-        viewModel.goToKitchen()
+        let finalAmount = viewModel.goToKitchen()
         
-        // TODO: test için print
-        print("Sipariş mutfağa gönderildi, Başarılı ekranı açılıyor!")
+        let successVC = OrderSuccessViewController(tableId: viewModel.tableId, orderAmount: finalAmount)
+        
+        navigationController?.pushViewController(successVC, animated: true)
     }
 }
 
@@ -249,7 +252,7 @@ extension NewCartViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: AdisyonCell.identifier, for: indexPath) as? AdisyonCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: CartCell.identifier, for: indexPath) as? CartCell else {
             return UITableViewCell()
         }
         

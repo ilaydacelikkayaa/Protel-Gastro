@@ -11,7 +11,7 @@ class NewCartViewModel {
     
     let tableId: Int
     
-    var cartItem: [CartItem] {
+    var cartItem: [CartItems] {
         return CartManager.shared.getCart(for: tableId)
     }
     
@@ -19,32 +19,33 @@ class NewCartViewModel {
         return cartItem.reduce(0.0) { $0 + (Double($1.quantity) * $1.menuItem.price) }
     }
     
-    var servicefee: Double {
+    var serviceFee: Double {
         return subtotal * 0.10
     }
     
     var total: Double {
-        return subtotal + servicefee
+        return subtotal + serviceFee
     }
     
     init(tableId: Int) {
         self.tableId = tableId
     }
     
-    func incrementQuantity(for item: CartItem) {
+    func incrementQuantity(for item: CartItems) {
         CartManager.shared.updateQuantity(tableId:tableId, menuItem: item.menuItem, change: 1)
     }
 
-    func decrementQuantity(for item: CartItem) {
+    func decrementQuantity(for item: CartItems) {
         CartManager.shared.updateQuantity(tableId: tableId, menuItem: item.menuItem, change: -1)
     }
     
-    func goToKitchen() {
-        if let index = RestaurantStateManager.shared.tables.firstIndex(where: { $0.id == tableId }) {
-            RestaurantStateManager.shared.tables[index].isFull = true
-            RestaurantStateManager.shared.tables[index].currentSubtotal = total
+    func goToKitchen() -> Double {
+            let orderTotal = total
+            
+            RestaurantStateManager.shared.finalizeCartToTable(tableId: tableId, items: cartItem)
+            
+        CartManager.shared.clearCart(tableId: tableId)
+            
+            return orderTotal
         }
-        RestaurantStateManager.shared.finalizeCartToTable(tableId: tableId, items: cartItem)
-        CartManager.shared.resetCart(tableId: tableId)
-    }
 }

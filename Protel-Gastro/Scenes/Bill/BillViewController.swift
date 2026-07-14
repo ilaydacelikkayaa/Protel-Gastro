@@ -5,7 +5,6 @@ final class BillViewController: UIViewController {
     
     // MARK: - Properties
     private let tableId: Int
-    // 🎯 Artık doğrudan ViewModel ile konuşuyoruz
     private let viewModel: BillViewModel
     
     init(tableId: Int) {
@@ -18,7 +17,6 @@ final class BillViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - UI Components (Tüm tanımlamalar aynı kalıyor...)
     private let backButton: UIButton = {
         let button = UIButton(type: .system)
         let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold)

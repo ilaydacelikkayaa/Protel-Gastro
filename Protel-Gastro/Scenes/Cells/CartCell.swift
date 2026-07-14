@@ -1,5 +1,5 @@
 //
-//  AdisyonCell.swift
+//  CartCell.swift
 //  Protel-Gastro
 //
 //  Created by İlayda Çelikkaya on 13.07.2026.
@@ -7,9 +7,10 @@
 import UIKit
 import SnapKit
 
-final class AdisyonCell: UITableViewCell {
-    static let identifier: String = "AdisyonCell"
-    
+final class CartCell: UITableViewCell {
+    static let identifier: String = "CartCell"
+    private var currentImageUrl: String?
+
     var didTapPlus: (() -> Void)?
     var didTapMinus: (() -> Void)?
     
@@ -37,7 +38,7 @@ final class AdisyonCell: UITableViewCell {
         label.textColor = .white
         return label
     }()
-
+    
     private let priceLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .bold)
@@ -115,7 +116,7 @@ final class AdisyonCell: UITableViewCell {
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(productImageView.snp.top).offset(4)
             make.leading.equalTo(productImageView.snp.trailing).offset(12)
-            make.trailing.equalTo(countStackView.snp.leading).offset(-12)
+            make.trailing.lessThanOrEqualTo(countStackView.snp.leading).offset(-12)
         }
         
         priceLabel.snp.makeConstraints { make in
@@ -133,19 +134,34 @@ final class AdisyonCell: UITableViewCell {
         
         minusButton.addTarget(self, action: #selector(minusButtonTapped), for: .touchUpInside)
         plusButton.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
+        countLabel.snp.makeConstraints { make in
+            make.width.greaterThanOrEqualTo(20)
+        }
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        
+        countStackView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        countStackView.setContentHuggingPriority(.required, for: .horizontal)
     }
     
     // MARK: - Configure Data
-    func configure(title: String, singlePrice: Int, count: Int) {
-        titleLabel.text = title
-        countLabel.text = "\(count)"
+    func configure(with item: CartItems) {
+        titleLabel.text = item.menuItem.name
+        countLabel.text = "\(item.quantity)"
         countLabel.textColor = .white
         
-        let totalPrice = singlePrice * count
+        let totalPrice = item.menuItem.price * Double(item.quantity)
+        priceLabel.text = String(format: "%.2f ₺ (%.2f x %d)", totalPrice, item.menuItem.price, item.quantity)
+        productImageView.image = nil
         
-        priceLabel.text = "\(totalPrice) ₺ (\(singlePrice) x \(count))"
+        let itemViewModel = UrunViewModel(product: item.menuItem)
         
-        productImageView.image = UIImage(systemName: "fork.knife.circle.fill")
+        self.currentImageUrl=item.menuItem.imageUrl
+        itemViewModel.fetchImage { [weak self] downloadedImage in
+            guard let self = self ,self.currentImageUrl == item.menuItem.imageUrl else { return }
+            DispatchQueue.main.async {
+                self.productImageView.image = downloadedImage
+            }
+        }
     }
     
     @objc func minusButtonTapped(){

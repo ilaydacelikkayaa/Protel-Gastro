@@ -12,7 +12,7 @@ final class SalonViewController: UIViewController {
     
     // MARK: - Properties
     private let viewModel = SalonViewModel()
-    
+    private var clockTimer: Timer?
     // MARK: - UI Components
     private let topSubtitleLabel: UILabel = {
         let label = UILabel()
@@ -29,10 +29,8 @@ final class SalonViewController: UIViewController {
         label.font = .systemFont(ofSize: 32, weight: .bold)
         return label
     }()
-    
     private let timeLabel: UILabel = {
         let label = UILabel()
-        label.text = "11:59"
         label.textColor = .themeOrange
         label.font = .systemFont(ofSize: 24, weight: .bold)
         return label
@@ -70,10 +68,22 @@ final class SalonViewController: UIViewController {
         setupUI()
         setupCollectionView()
         updateUpperCards()
+        updateCurrentTime()
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+        
+        updateUpperCards()
+        collectionView.reloadData()
+        clockTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+                self?.updateCurrentTime()
+            }
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        clockTimer?.invalidate()
+        clockTimer = nil
     }
     
     // MARK: - UI Setup
@@ -115,7 +125,7 @@ final class SalonViewController: UIViewController {
     }
     
     private func setupCollectionView() {
-        collectionView.register(MasaCell.self, forCellWithReuseIdentifier: MasaCell.identifier)
+        collectionView.register(TableCell.self, forCellWithReuseIdentifier: TableCell.identifier)
         collectionView.dataSource = self
         collectionView.delegate = self
     }
@@ -158,9 +168,14 @@ final class SalonViewController: UIViewController {
     }
     
     private func updateUpperCards() {
-        doluCountLabel.text = viewModel.fullTableCountString.components(separatedBy: " ").first
-        bosCountLabel.text = viewModel.emptyTableCountString.components(separatedBy: " ").first
-        siparisCountLabel.text = viewModel.totalOrderCountString
+        doluCountLabel.text = "\(viewModel.fullTableCount)"
+        bosCountLabel.text = "\(viewModel.emptyTableCount)"
+        siparisCountLabel.text = "\(viewModel.totalOrderCount)"
+    }
+    private func updateCurrentTime() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        timeLabel.text = formatter.string(from: Date())
     }
 }
 
@@ -172,7 +187,7 @@ extension SalonViewController: UICollectionViewDataSource, UICollectionViewDeleg
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MasaCell.identifier, for: indexPath) as? MasaCell else {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TableCell.identifier, for: indexPath) as? TableCell else {
             return UICollectionViewCell()
         }
         let masa = viewModel.tables[indexPath.item]
@@ -189,10 +204,10 @@ extension SalonViewController: UICollectionViewDataSource, UICollectionViewDeleg
         let selectedTable = viewModel.tables[indexPath.item]
         
         if selectedTable.isFull {
-            let adisyonVC = AdisyonViewController()
-            navigationController?.pushViewController(adisyonVC, animated: true)
+            let billVC = BillViewController(tableId: selectedTable.id)
+            navigationController?.pushViewController(billVC, animated: true)
         } else {
-            let menuVC = MenuViewController(tableName: selectedTable.name)
+            let menuVC = MenuViewController(tableId: selectedTable.id)
             navigationController?.pushViewController(menuVC, animated: true)
         }
     }

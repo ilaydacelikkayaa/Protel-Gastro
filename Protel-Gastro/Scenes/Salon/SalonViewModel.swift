@@ -1,10 +1,3 @@
-//
-//  Untitled.swift
-//  Protel-Gastro
-//
-//  Created by İlayda Çelikkaya on 6.07.2026.
-//
-
 import Foundation
 
 final class SalonViewModel {
@@ -13,18 +6,16 @@ final class SalonViewModel {
         return RestaurantStateManager.shared.tables
     }
     
-    var totalOrderCountString: String {
-        let activeOrders = tables.filter { $0.isFull }.count
-        return "\(activeOrders)"
+    var fullTableCount: Int {
+        return tables.filter { $0.isFull }.count
     }
     
-    var fullTableCountString: String {
-        let count = tables.filter { $0.isFull }.count
-        return "\(count) Dolu"
+    var emptyTableCount: Int {
+        return tables.filter { !$0.isFull }.count
     }
     
-    var emptyTableCountString: String {
-        let count = tables.filter { !$0.isFull }.count
-        return "\(count) Boş"
+    var totalOrderCount: Int {
+        return RestaurantStateManager.shared.totalSentOrdersCount
     }
+    
 }

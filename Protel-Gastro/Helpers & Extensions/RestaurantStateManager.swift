@@ -1,9 +1,3 @@
-//
-//  OrderManager.swift
-//  Protel-Gastro
-//
-//  Created by İlayda Çelikkaya on 6.07.2026.
-//
 import Foundation
 
 final class RestaurantStateManager {
@@ -11,12 +5,12 @@ final class RestaurantStateManager {
     // MARK: - Properties
     static let shared = RestaurantStateManager()
     var tables: [RestaurantTable] = []
-    private var tableCarts: [Int: [CartItem]] = [:]
     
-    // TODO: - Yönetici paneli eklenebilir
-    var totalRevenue:Double {
-        return tables.reduce(0.0){ $0 + $1.currentSubtotal}
+    var totalRevenue: Double {
+        return tables.reduce(0.0) { $0 + $1.currentSubtotal }
     }
+    
+    var totalSentOrdersCount: Int = 0
     
     // MARK: - Init
     private init() {
@@ -28,14 +22,28 @@ final class RestaurantStateManager {
         for i in 1...12 {
             tables.append(RestaurantTable(id: i))
         }
-
-        tables[1].isFull = true
-        tables[1].currentSubtotal = 320.0
-        tables[1].guestCount = 2
-       
     }
     
-    func getCart(for tableId: Int) -> [CartItem] {
-        return tableCarts[tableId] ?? []
+    func getCart(for tableId: Int) -> [CartItems] {
+        guard let index = tables.firstIndex(where: { $0.id == tableId }) else { return [] }
+        return tables[index].finalizedOrders
     }
+    
+    func finalizeCartToTable(tableId: Int, items: [CartItems]) {
+            guard let index = tables.firstIndex(where: { $0.id == tableId }) else { return }
+            
+            tables[index].finalizedOrders.append(contentsOf: items)
+            tables[index].isFull = true
+            
+            let sentQuantity = items.reduce(0) { $0 + $1.quantity }
+            totalSentOrdersCount += sentQuantity
+        }
+    
+    func closeTable(tableId: Int) {
+            guard let index = tables.firstIndex(where: { $0.id == tableId }) else { return }
+            
+            tables[index].isFull = false
+            tables[index].finalizedOrders.removeAll()
+        }
+    
 }

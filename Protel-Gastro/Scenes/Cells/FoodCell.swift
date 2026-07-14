@@ -11,6 +11,8 @@ import SnapKit
 class FoodCell: UICollectionViewCell {
     static let reuseIdentifier = "yemek-cell"
     
+    private var currentImageUrl: String?
+    
     var didTapPlusButton:(()->Void)?
     // MARK: - UI Components
     private let urunImageView: UIImageView = {
@@ -69,6 +71,7 @@ class FoodCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         urunImageView.image = nil
+        currentImageUrl=nil
     }
     // MARK: - Setup UI
     private func setupCell() {
@@ -119,10 +122,11 @@ class FoodCell: UICollectionViewCell {
         descriptionLabel.text = "Puan: \(item.rating) | Bugün \(item.orderCount) kez sipariş edildi"
         
         priceLabel.text = String(format: "%.2f ₺", item.price)
-        
+        self.currentImageUrl = item.imageUrl
         ImageLoader.shared.loadImage(from: item.imageUrl) {
             [weak self] image in
-            self?.urunImageView.image = image ?? UIImage(systemName: "fork.knife")
+            guard let self = self , self.currentImageUrl == item.imageUrl else { return }
+            self.urunImageView.image = image ?? UIImage(systemName: "fork.knife")
         }
     }
     @objc private func plusTapped() {

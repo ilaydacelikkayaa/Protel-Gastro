@@ -104,9 +104,10 @@ final class TableCell: UICollectionViewCell {
             layer.borderColor = UIColor.themeOrange.cgColor
             numberLabel.textColor = .themeOrange
             topLabel.textColor = .themeOrange
-            statusLabel.text = String(format: "%.0f ₺", masa.currentSubtotal)
+            statusLabel.text = String(format: "%.2f ₺", masa.currentTotal)
             statusLabel.textColor = .white
             orangeDotView.isHidden = false
+            
         } else {
             backgroundColor = .themeCardBackground
             layer.borderColor = UIColor.clear.cgColor

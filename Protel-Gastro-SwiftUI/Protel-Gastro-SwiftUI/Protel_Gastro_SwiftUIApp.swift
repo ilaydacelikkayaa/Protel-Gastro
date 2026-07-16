@@ -11,7 +11,7 @@ import SwiftUI
 struct Protel_Gastro_SwiftUIApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HallView()
         }
     }
 }

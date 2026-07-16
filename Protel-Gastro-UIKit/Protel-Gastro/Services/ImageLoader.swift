@@ -21,7 +21,7 @@ final class ImageLoader {
             completion(cachedImage)
             return
         }
-        
+
         NetworkManager.shared.downloadImage(from: urlString) { [weak self] result in
             switch result {
                 

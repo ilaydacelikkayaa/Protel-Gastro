@@ -29,7 +29,7 @@ final class NetworkManager {
         let response: URLResponse
         
         do {
-           
+            
             (data, response) = try await URLSession.shared.data(from: url)
         } catch {
             throw NetworkError.unknown(error)
@@ -45,7 +45,7 @@ final class NetworkManager {
         
         do {
             let decodedData = try JSONDecoder().decode(T.self, from: data)
-            return decodedData // Her şey başarılıysa çözümlenmiş modeli doğrudan teslim et.
+            return decodedData 
         } catch {
             throw NetworkError.decodingError
         }

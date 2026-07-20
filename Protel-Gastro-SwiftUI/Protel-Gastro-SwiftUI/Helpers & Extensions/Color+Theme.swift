@@ -11,4 +11,5 @@ extension Color {
     static let themeCardBackground = Color(red: 0.12, green: 0.12, blue: 0.14)
     static let themeOrange = Color(red: 0.95, green: 0.43, blue: 0.13)
     static let themeSecondaryText = Color(red: 0.56, green: 0.56, blue: 0.58)
+    static let cardBackground = Color(red: 23/255, green: 23/255, blue: 23/255)
 }

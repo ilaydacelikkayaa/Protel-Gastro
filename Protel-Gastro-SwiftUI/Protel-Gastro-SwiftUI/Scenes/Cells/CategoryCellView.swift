@@ -18,6 +18,6 @@ struct CategoryCellView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(isSelected ? Color.themeOrange : Color.themeCardBackground)
-            .clipShape(Capsule()) // Tam bir kapsül şekli verir
+            .clipShape(Capsule()) 
     }
 }

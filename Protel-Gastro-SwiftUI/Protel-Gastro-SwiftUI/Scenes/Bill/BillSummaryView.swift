@@ -39,19 +39,14 @@ struct BillSummaryView: View {
             
         }
         .padding(20)
-        .background(
-            Color(red: 23/255,
-                  green: 23/255,
-                  blue: 23/255)
-        )
+        .background(Color.cardBackground)
+        
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(
-                    Color(red:44/255,
-                          green:44/255,
-                          blue:46/255),
-                    lineWidth:1
+                    Color.themeBorder,
+                    lineWidth: 1
                 )
         )
         .padding(.horizontal,20)

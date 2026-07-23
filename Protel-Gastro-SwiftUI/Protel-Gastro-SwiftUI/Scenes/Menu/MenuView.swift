@@ -109,7 +109,6 @@ struct MenuView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("")
           .alert("Hata", isPresented: Binding(

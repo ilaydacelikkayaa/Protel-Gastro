@@ -11,7 +11,6 @@ struct NewCartView: View {
     
     // MARK: - Properties
     @StateObject var viewModel: NewCartViewModel
-    @State private var finalOrderAmount: Double = 0.0
     @EnvironmentObject private var router: NavigationRouter
 
     var body: some View {
@@ -94,32 +93,29 @@ private extension NewCartView {
             Spacer()
         }
     }
-    
-    var kitchenButton: some View {
-        Button (action:{
 
-            finalOrderAmount = viewModel.goToKitchen()
+        var kitchenButton: some View {
+            Button {
+                let finalOrderAmount = viewModel.goToKitchen()
 
-            router.path.append(
-                Route.success(
-                    tableId: viewModel.tableId,
-                    amount: finalOrderAmount
+                router.path.append(
+                    Route.success(
+                        tableId: viewModel.tableId,
+                        amount: finalOrderAmount
+                    )
                 )
-            )
-
-        })
-        {
-            Text("Siparişi Mutfağa Gönder")
-                .font(.headline)
-                .bold()
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(Color.themeOrange)
-                .cornerRadius(16)
+            } label: {
+                Text("Siparişi Mutfağa Gönder")
+                    .font(.headline)
+                    .bold()
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color.themeOrange)
+                    .cornerRadius(16)
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
-    }
 }
 // MARK: - Subviews Extension
 private extension NewCartView {

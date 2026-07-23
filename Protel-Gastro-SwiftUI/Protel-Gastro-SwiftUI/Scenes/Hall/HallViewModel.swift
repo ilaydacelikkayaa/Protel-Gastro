@@ -10,9 +10,17 @@ import SwiftUI
 import Combine
 
 final class HallViewModel:ObservableObject {
-    //observedobject yaparak stateManager'ı dinliyoruz.
-    @ObservedObject private var stateManager = RestaurantStateManager.shared
-
+    private let stateManager = RestaurantStateManager.shared
+    //dinleme baglantısını cancellables icinde tasıyoruz
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        stateManager.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+    }
     var tables: [RestaurantTable] {
         return stateManager.tables
     }

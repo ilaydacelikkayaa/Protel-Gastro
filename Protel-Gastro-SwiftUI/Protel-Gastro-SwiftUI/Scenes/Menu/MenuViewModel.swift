@@ -33,37 +33,55 @@ final class MenuViewModel: ObservableObject {
             self.errorMessage = nil
             
             do {
-               
+                
                 async let fetchedProducts: [StoreProduct] = NetworkManager.shared.fetch(request: .fetchProducts)
                 
                 let categoriesToFetch = ["Dessert", "Beef", "Chicken", "Seafood", "Pasta"]
-                var allDownloadedFoods: [FoodItem] = []
                 
-                for categoryName in categoriesToFetch {
-                    let response: MealResponse = try await NetworkManager.shared.fetch(request: .fetchMeals(category: categoryName))
-                    
-                    let mappedMeals = response.meals.map { meal -> FoodItem in
-                        var updatedMeal = meal
-                        updatedMeal.category = categoryName
-                        return updatedMeal
+                let allDownloadedFoods: [FoodItem] = try await withThrowingTaskGroup(
+                    of: [FoodItem].self
+                ) { group in
+
+                    for categoryName in categoriesToFetch {
+                        group.addTask {
+                            let response: MealResponse = try await NetworkManager.shared.fetch(
+                                request: .fetchMeals(category: categoryName)
+                            )
+
+                            let mappedMeals = response.meals.map { meal -> FoodItem in
+                                var updatedMeal = meal
+                                updatedMeal.category = categoryName
+                                return updatedMeal
+                            }
+
+                            return mappedMeals
+                        }
                     }
-                    allDownloadedFoods.append(contentsOf: mappedMeals)
+
+                    var allFoods: [FoodItem] = []
+
+                    for try await foods in group {
+                        allFoods.append(contentsOf: foods)
+                    }
+
+                    return allFoods
                 }
-                
-                let storeProducts = try await fetchedProducts
-                
-                guard !storeProducts.isEmpty else {
-                    self.isLoading = false
-                    return
-                }
-                
-                var combinedItems: [MenuItem] = []
-                
+                    
+                    let storeProducts = try await fetchedProducts
+                    
+                    guard !storeProducts.isEmpty else {
+                        self.isLoading = false
+                        return
+                    }
+                    
+                    var combinedItems: [MenuItem] = []
+                    
                 for i in 0..<allDownloadedFoods.count {
                     let food = allDownloadedFoods[i]
+
                     let mealId = Int(food.idMeal) ?? 0
                     let product = storeProducts[mealId % storeProducts.count]
-                    
+
                     let item = MenuItem(
                         id: "\(food.idMeal)-\(i)",
                         name: food.strMeal,
@@ -73,27 +91,28 @@ final class MenuViewModel: ObservableObject {
                         imageUrl: food.strMealThumb,
                         orderCount: product.rating.count
                     )
+
                     combinedItems.append(item)
                 }
-                
-                self.allMenuItems = combinedItems
-                
-                let uniqueCategories = Set(self.allMenuItems.map { $0.category })
-                self.categories = Array(uniqueCategories).sorted()
-                
-                if let firstCategory = self.categories.first {
-                    self.filterMenu(by: firstCategory)
+                    
+                    self.allMenuItems = combinedItems
+                    
+                    let uniqueCategories = Set(self.allMenuItems.map { $0.category })
+                    self.categories = Array(uniqueCategories).sorted()
+                    
+                    if let firstCategory = self.categories.first {
+                        self.filterMenu(by: firstCategory)
+                    }
+                    
+                    self.isLoading = false
+                    
+                } catch {
+                    print("Menü yüklenirken hata oluştu: \(error)")
+                    self.errorMessage = "Menü yüklenirken bir hata oluştu. Lütfen internet bağlantınızı kontrol edin."
+                    self.isLoading = false
                 }
-                
-                self.isLoading = false
-                
-            } catch {
-                print("Menü yüklenirken hata oluştu: \(error)")
-                self.errorMessage = "Menü yüklenirken bir hata oluştu. Lütfen internet bağlantınızı kontrol edin."
-                self.isLoading = false
             }
         }
-    }
     
     // MARK: - Business Logic
     func filterMenu(by category: String) {
